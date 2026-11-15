@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Loadout app icon">
+  <!-- macOS app icon: 824px rounded tile on a 1024px canvas (standard 100px transparent margin). -->
+  <rect x="100" y="100" width="824" height="824" rx="184" fill="#2A2C30"/>
+  <g transform="translate(137 137) scale(7.5)">
+    <path d="M16 32 L50 14 L84 32 L84 44 L50 26 L16 44 Z" fill="#E8DFC4"/>
+    <path d="M16 53 L50 35 L84 53 L84 65 L50 47 L16 65 Z" fill="#E8DFC4"/>
+    <path d="M16 74 L50 56 L84 74 L84 86 L50 68 L16 86 Z" fill="#E9A04B"/>
+  </g>
+</svg>

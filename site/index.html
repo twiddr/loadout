@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loadout · agent skills on your Mac</title>
+<meta name="description" content="Loadout is a macOS app for Claude Code and Codex. It keeps one copy of each agent skill and switches it on or off per agent.">
+<link rel="canonical" href="https://twiddr.github.io/loadout/">
+<meta name="theme-color" content="#2a2a2a">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Loadout · agent skills on your Mac">
+<meta property="og:description" content="All your agent skills, in one library. Deployed with a single switch. A macOS app for Claude Code and Codex.">
+<meta property="og:url" content="https://twiddr.github.io/loadout/">
+<meta property="og:image" content="https://twiddr.github.io/loadout/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Loadout: all your agent skills, in one library, deployed with a single switch. The Loadout window with sample skill cards.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/black-ops-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/vendor/gsap.min.js" defer></script>
+<script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/vendor/SplitText.min.js" defer></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#install">Skip to install</a>
+<main>
+  <div class="hero-copy">
+    <h1>Loadout</h1>
+    <p class="data meta"><span data-rel-show="live" hidden><span class="nw"><a class="rel-link" data-rel-link href="https://github.com/twiddr/loadout/releases/latest"><b>v<span data-rel="version"></span></b></a> ·</span> <span class="nw"><span data-rel="date"></span> ·</span> </span><span class="nw">macOS ·</span> <span class="nw">Apple silicon</span></p>
+    <p class="lead"><span>All your agent skills, in one library.</span> <span>Deployed with a single switch.</span></p>
+    <p class="body">Keep all your agent skills in one library on your Mac, and choose with one click which agent gets which. Switch a skill on for Claude Code or Codex, and Loadout links it straight into that agent's skills folder. Switch it off, and the link is gone, while the skill stays safe in your library. No copies to keep in sync.</p>
+    <div class="install">
+      <div class="cmd">
+        <pre><code id="install-cmd">curl -fL -o ~/Downloads/Loadout.dmg https://<wbr>github.com/<wbr>twiddr/<wbr><span class="nb">loadout</span>/<wbr>releases/<wbr>latest/<wbr>download/<wbr>Loadout.dmg</code></pre>
+        <button class="copy" type="button" data-target="install-cmd">Copy</button>
+      </div>
+      <p class="alt">Paste it in Terminal. It downloads Loadout.dmg<span data-rel-show="live" hidden> (<span data-rel="size"></span>)</span>.</p>
+    </div>
+  </div>
+
+  <section class="scene" aria-label="A tour of the app">
+    <div class="stage">
+      <div class="screen">
+        <div class="screen-in">
+          <img src="assets/shots/1-loadout.webp" srcset="assets/shots/1-loadout-1440.webp 1440w, assets/shots/1-loadout.webp 2880w" sizes="(max-width: 899px) 100vw, 1180px" width="1440" height="900" alt="The Loadout page: fifteen sample skill cards with a CC and a CX switch each, and the Platoon panel with Claude Code and Codex.">
+          <img data-src="assets/shots/2-skill.webp" width="1440" height="900" alt="The page of the sample skill brainstorming, with its Tessl review score 90/100 and the agents it is deployed to.">
+          <img data-src="assets/shots/4-recon.webp" width="1440" height="900" alt="The Recon page: two unmanaged items in the Claude Code folder, with RECRUIT and MOVE TO BACKUP.">
+        </div>
+      </div>
+      <div class="veil"></div>
+      <div class="bracket" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="caps">
+        <article class="cap"><h2>Deploy a skill</h2><p>Every skill card has one switch per agent: CC for Claude Code, CX for Codex. A filled switch means the skill is deployed to that agent. With every switch off, the card shows STOWED and the skill stays in the library.</p></article>
+        <article class="cap"><h2>Tessl review</h2><p>Each skill has its own page: the rendered <code>SKILL.md</code>, the agents it is deployed to, and its Tessl review score. Fix and Publish work on skills from your own folders.</p></article>
+        <article class="cap"><h2>Recon</h2><p>Recon finds the skills that were already in your agent folders before you installed Loadout. RECRUIT brings one of them under Loadout's switches and keeps your original, unchanged, in a backup.</p></article>
+      </div>
+      <div class="slots" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <section class="boot" aria-labelledby="boot-h">
+    <div class="pad" role="img" aria-label="The Briefing map from the app: skills in the Loadout base, trucks carrying them to the Platoon tents of Claude Code, Codex and OpenCode.">
+      <div class="view">
+        <img class="mapimg" data-lazy="assets/briefing/map.webp" width="1600" height="808" alt="">
+        <noscript><img class="mapimg" src="assets/briefing/map.webp" width="1600" height="808" alt=""></noscript>
+        <svg class="world" viewBox="0 0 993 497" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><marker id="ah" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" refX="7" refY="10" orient="auto"><path class="ahp" d="M0 0 L20 10 L0 20 Z"/></marker></defs>
+          <g class="arrows">
+            <path d="M665 148 C720 140 790 110 836 86" marker-end="url(#ah)"/>
+            <path d="M672 226 C730 222 800 200 844 185" marker-end="url(#ah)"/>
+            <path d="M675 291 C740 305 800 298 842 282" marker-end="url(#ah)"/>
+            <path d="M140 92 C205 110 265 148 316 172" marker-end="url(#ah)"/>
+            <path d="M325 246 C270 250 205 262 152 272" marker-end="url(#ah)"/>
+            <path class="dot" d="M772 436 C700 444 610 424 556 372" marker-end="url(#ah)"/>
+          </g>
+          <g opacity="0"><image data-lazy="assets/briefing/truck.webp" x="-38" y="-29" width="76" height="57"/>
+            <animateMotion dur="6s" begin="0.6s" repeatCount="indefinite" path="M665 148 C720 140 790 110 842 84" keyPoints="0;0.66;0.66" keyTimes="0;0.7;1" calcMode="linear"/>
+            <animate attributeName="opacity" dur="6s" begin="0.6s" repeatCount="indefinite" values="0;1;1;1;0" keyTimes="0;0.1;0.7;0.9;1"/></g>
+          <g opacity="0"><image data-lazy="assets/briefing/truck.webp" x="-38" y="-29" width="76" height="57"/>
+            <animateMotion dur="6s" begin="2.8s" repeatCount="indefinite" path="M672 226 C730 222 800 200 850 183" keyPoints="0;0.66;0.66" keyTimes="0;0.7;1" calcMode="linear"/>
+            <animate attributeName="opacity" dur="6s" begin="2.8s" repeatCount="indefinite" values="0;1;1;1;0" keyTimes="0;0.1;0.7;0.9;1"/></g>
+          <g transform="translate(778 328)"><image data-lazy="assets/briefing/drone.webp" width="88" height="64"/>
+            <animateTransform attributeName="transform" type="translate" additive="sum" dur="2.6s" repeatCount="indefinite" values="0 -3;0 4;0 -3"/></g>
+          <g opacity="0"><image data-lazy="assets/briefing/heli.webp" x="-56" y="-40" width="112" height="80.5"/>
+            <g transform="translate(-16.8 -18.4) scale(1 0.3)"><circle class="rotor" r="28" stroke-width="56" stroke-dasharray="12.3 31.7"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.22s" repeatCount="indefinite"/></circle></g>
+            <g transform="translate(51.5 -24.4) scale(0.35 1)"><circle class="rotor" r="6.15" stroke-width="12.3" stroke-dasharray="2.7 6.95"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.22s" repeatCount="indefinite"/></circle></g>
+            <animateMotion dur="8s" begin="1.2s" repeatCount="indefinite" path="M325 232 C280 236 230 244 195 250" keyPoints="0;1;1" keyTimes="0;0.8;1" calcMode="spline" keySplines="0.42 0 0.58 1;0 0 1 1"/>
+            <animate attributeName="opacity" dur="8s" begin="1.2s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.1;0.8;0.92;1"/></g>
+        </svg>
+        <div class="scan"></div>
+      </div>
+      <img class="frameimg" data-lazy="assets/briefing/frame.webp" width="1600" height="900" alt="">
+      <noscript><img class="frameimg" src="assets/briefing/frame.webp" width="1600" height="900" alt=""></noscript>
+    </div>
+    <div class="boot-copy">
+      <h2 id="boot-h">Boot camp</h2>
+      <p>At first launch, BOOT CAMP checks for your agents, git and Tessl. A missing tool shows its install command, with COPY and OPEN TERMINAL.</p>
+      <ul class="checks" aria-label="What BOOT CAMP checks"><li>Claude Code</li><li>Codex</li><li>git</li><li>Tessl</li></ul>
+    </div>
+  </section>
+
+  <section class="get" id="install" aria-labelledby="get-h">
+    <div class="get-head">
+      <h2 id="get-h">Get Loadout</h2>
+    </div>
+    <div class="paths">
+      <div class="path">
+        <h3>Install with Terminal</h3>
+        <ol>
+          <li>In Terminal, run:
+            <div class="cmd">
+              <pre><code id="install-cmd-2">curl -fL -o ~/Downloads/Loadout.dmg https://<wbr>github.com/<wbr>twiddr/<wbr><span class="nb">loadout</span>/<wbr>releases/<wbr>latest/<wbr>download/<wbr>Loadout.dmg</code></pre>
+              <button class="copy" type="button" data-target="install-cmd-2">Copy</button>
+            </div>
+          </li>
+          <li>Open <code>Loadout.dmg</code> in Downloads and drag Loadout to Applications.</li>
+          <li>Start Loadout from <code>/Applications</code>.</li>
+        </ol>
+      </div>
+    </div>
+    <dl class="facts">
+      <div data-rel-show="live" hidden><dt>Version</dt><dd data-rel="version"></dd></div>
+      <div data-rel-show="live" hidden><dt>Released</dt><dd data-rel="date"></dd></div>
+      <div data-rel-show="live" hidden><dt>File</dt><dd>Loadout.dmg</dd></div>
+      <div><dt>Requirements</dt><dd>Apple silicon</dd></div>
+      <div class="hash" data-rel-show="hash" hidden><dt>SHA-256</dt><dd data-rel="sha256"></dd></div>
+      <div data-rel-show="fallback"><dt>Latest release</dt><dd>Version, size and SHA-256 are in the <a href="https://github.com/twiddr/loadout/releases/latest">release notes</a></dd></div>
+    </dl>
+  </section>
+</main>
+</body>
+</html>

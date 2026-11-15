@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 12 72 76" width="72" height="76" role="img" aria-label="Loadout">
+  <!-- Single-colour Loadout mark (template / menu bar / disabled states). All bands follow currentColor. -->
+  <path d="M16 32 L50 14 L84 32 L84 44 L50 26 L16 44 Z" fill="currentColor"/>
+  <path d="M16 53 L50 35 L84 53 L84 65 L50 47 L16 65 Z" fill="currentColor"/>
+  <path d="M16 74 L50 56 L84 74 L84 86 L50 68 L16 86 Z" fill="currentColor"/>
+</svg>

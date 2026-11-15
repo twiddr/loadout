@@ -1,0 +1,28 @@
+{
+  "tile": {
+    "id": "01b7e2d4-6a3c-7f18-a2d9-3c41e8b05f7a",
+    "name": "changelog-writer",
+    "fullName": "acme/changelog-writer",
+    "featured": false,
+    "isPrivate": true,
+    "createdAt": "2026-03-18T14:02:45.903Z",
+    "updatedAt": "2026-03-18T14:02:45.903Z",
+    "latestVersion": null,
+    "latestVersionData": null,
+    "archived": false,
+    "archivedBy": null,
+    "archivedAt": null,
+    "archivedReason": null,
+    "deprecated": false,
+    "deprecatedBy": null,
+    "deprecatedAt": null,
+    "deprecatedReason": null,
+    "deprecatedReplacement": null,
+    "moderationPassed": false,
+    "moderationError": null,
+    "tesslVerified": false,
+    "sourceUrl": null
+  },
+  "version": null,
+  "reportUrl": "https://tessl.io/registry/acme/changelog-writer/security"
+}

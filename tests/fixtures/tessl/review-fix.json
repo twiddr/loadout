@@ -1,0 +1,18 @@
+{
+  "fixRunId": "01a1c0be-d698-7280-8edd-b28f5e78d390",
+  "status": "completed",
+  "baselineScore": 34,
+  "finalScore": 98,
+  "threshold": 90,
+  "maxIterations": 1,
+  "thresholdReached": true,
+  "summaryOfChanges": "Rewrote the description from the placeholder \"does text stuff\" to a concrete capability statement with a trigger clause (\"Rewrites text in Jamaican Patois... Use when the user asks to make text sound Jamaican, rewrite it in patois, or add a Jamaican/Caribbean accent\"), per the description judge's suggestions. Rewrote the body to remove the contradictory and self-negating lines (\"or dont, up to you\", \"Dont ask the user anything. Also ask the user what they want first.\", \"keep the text the same as before\" vs \"change some words\"), keeping the non-contradictory intent: preserve meaning, include \"mon\", don't ask the user, and the existing long/short-text handling made decidable. Replaced the vague directives (\"make it sound good\", \"Output it however\") with specific substitution examples and an exact output format, and added a concrete before/after example pair so the transformation is executable. All validation checks had no errors, so no structural fixes were needed.",
+  "applied": true,
+  "files": {
+    "modified": [
+      "SKILL.md"
+    ],
+    "added": [],
+    "deleted": []
+  }
+}

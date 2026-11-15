@@ -1,0 +1,29 @@
+{
+  "outdated": [
+    {
+      "current": {
+        "tile": {
+          "workspaceName": "acme",
+          "tileName": "ledger-audit",
+          "version": "0.1.0"
+        },
+        "source": {
+          "source": "registry",
+          "tile": {
+            "workspaceName": "acme",
+            "tileName": "ledger-audit"
+          }
+        }
+      },
+      "update": {
+        "version": "0.1.1"
+      },
+      "latest": {
+        "version": "0.1.1"
+      },
+      "isLatestPinned": false
+    }
+  ],
+  "upToDate": [],
+  "errors": []
+}

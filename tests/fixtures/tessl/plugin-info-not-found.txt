@@ -1,0 +1,6 @@
+✘ Could not find plugin "acme/never-published".
+
+It may not exist, may be unpublished, or may be private to a workspace you are not a member of.
+
+To see published plugins, run:
+    tessl search

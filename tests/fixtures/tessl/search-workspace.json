@@ -1,0 +1,154 @@
+{
+  "results": [
+    {
+      "type": "tile",
+      "fullName": "acme/pirate-speak",
+      "workspaceName": "acme",
+      "tileName": "pirate-speak",
+      "description": "makes text sound like a pirate",
+      "latestVersion": "0.1.0",
+      "versions": [
+        "0.1.0"
+      ],
+      "content": {
+        "hasSkills": true,
+        "hasDocs": false,
+        "hasRules": false
+      },
+      "scores": {
+        "aggregate": 0.31,
+        "quality": 0.38,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    },
+    {
+      "type": "tile-skill",
+      "name": "pirate-speak",
+      "description": "makes text sound like a pirate",
+      "source": "acme/pirate-speak",
+      "scores": {
+        "aggregate": 0.31,
+        "quality": 0.38,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    },
+    {
+      "type": "tile",
+      "fullName": "acme/ledger-audit",
+      "workspaceName": "acme",
+      "tileName": "ledger-audit",
+      "description": "Use when checking a monthly supplier ledger export against the purchase orders of the same month. Trigger when someone shares a ledger file, asks why a supplier total differs from the orders, or wants the lines that do not match listed by day.",
+      "latestVersion": "0.1.1",
+      "versions": [
+        "0.1.1"
+      ],
+      "content": {
+        "hasSkills": true,
+        "hasDocs": false,
+        "hasRules": false
+      },
+      "scores": {
+        "aggregate": 0.85,
+        "quality": 1,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    },
+    {
+      "type": "tile-skill",
+      "name": "ledger-audit",
+      "description": "Use when checking a monthly supplier ledger export against the purchase orders of the same month. Trigger when someone shares a ledger file, asks why a supplier total differs from the orders, or wants the lines that do not match listed by day.",
+      "source": "acme/ledger-audit",
+      "scores": {
+        "aggregate": 0.85,
+        "quality": 1,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    },
+    {
+      "type": "tile",
+      "fullName": "acme/changelog-writer",
+      "workspaceName": "acme",
+      "tileName": "changelog-writer",
+      "description": "Drafts a changelog entry from the commits since the last release tag, grouped by kind of change. Use when the user asks for release notes, a changelog entry or a summary of what changed since the last version.",
+      "latestVersion": "0.2.1",
+      "versions": [
+        "0.2.1"
+      ],
+      "content": {
+        "hasSkills": true,
+        "hasDocs": false,
+        "hasRules": false
+      },
+      "scores": {
+        "aggregate": 0.79,
+        "quality": 0.96,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    },
+    {
+      "type": "tile-skill",
+      "name": "changelog-writer",
+      "description": "Drafts a changelog entry from the commits since the last release tag, grouped by kind of change. Use when the user asks for release notes, a changelog entry or a summary of what changed since the last version.",
+      "source": "acme/changelog-writer",
+      "scores": {
+        "aggregate": 0.79,
+        "quality": 0.96,
+        "impact": null,
+        "security": "LOW",
+        "securityLevel": "NONE",
+        "evals": {
+          "average": null,
+          "baseline": null,
+          "improvement": null,
+          "improvementMultiplier": null,
+          "count": null
+        }
+      }
+    }
+  ]
+}

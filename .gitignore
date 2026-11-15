@@ -1,0 +1,19 @@
+node_modules
+out
+dist
+.eslintcache
+test-results
+playwright-report
+*.log
+.DS_Store
+.vitest
+
+# Build worktrees for unattended sessions
+.worktree/
+
+# Subagent-driven development scratch
+.superpowers/
+
+# Local tool folders
+.claude/
+.impeccable/

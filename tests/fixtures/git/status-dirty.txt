@@ -1,0 +1,4 @@
+ D README.md
+ M "skills/beta two/SKILL.md"
+R  skills/alpha/SKILL.md -> skills/gamma/SKILL.md
+ M skills/kø/SKILL.md

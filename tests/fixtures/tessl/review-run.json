@@ -1,0 +1,186 @@
+{
+  "reviewRunId": "01a1af99-a5df-72a3-a617-7a72e5634204",
+  "status": "completed",
+  "review-plugin": "tessl/default-skill-review@0.2.0",
+  "validation": {
+    "overallPassed": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "checks": [
+      {
+        "name": "skill_md_line_count",
+        "status": "passed",
+        "message": "SKILL.md line count is 33 (<= 500)"
+      },
+      {
+        "name": "frontmatter_valid",
+        "status": "passed",
+        "message": "YAML frontmatter is valid"
+      },
+      {
+        "name": "name_field",
+        "status": "passed",
+        "message": "'name' field is valid: 'internal-comms'"
+      },
+      {
+        "name": "description_field",
+        "status": "passed",
+        "message": "'description' field is valid (329 chars)"
+      },
+      {
+        "name": "compatibility_field",
+        "status": "passed",
+        "message": "'compatibility' field not present (optional)"
+      },
+      {
+        "name": "allowed_tools_field",
+        "status": "passed",
+        "message": "'allowed-tools' field not present (optional)"
+      },
+      {
+        "name": "metadata_version",
+        "status": "passed",
+        "message": "'metadata' field not present (optional)"
+      },
+      {
+        "name": "metadata_field",
+        "status": "passed",
+        "message": "'metadata' field not present (optional)"
+      },
+      {
+        "name": "license_field",
+        "status": "passed",
+        "message": "'license' field is present: Complete terms in LICENSE.txt"
+      },
+      {
+        "name": "frontmatter_unknown_keys",
+        "status": "passed",
+        "message": "No unknown frontmatter keys found"
+      },
+      {
+        "name": "body_present",
+        "status": "passed",
+        "message": "SKILL.md body is present"
+      },
+      {
+        "name": "scripts_directory",
+        "status": "passed",
+        "message": "'scripts/' directory not present in bundle (optional)"
+      },
+      {
+        "name": "references_directory",
+        "status": "passed",
+        "message": "'references/' directory not present in bundle (optional)"
+      },
+      {
+        "name": "assets_directory",
+        "status": "passed",
+        "message": "'assets/' directory not present in bundle (optional)"
+      },
+      {
+        "name": "relative_links",
+        "status": "passed",
+        "message": "No markdown links found"
+      },
+      {
+        "name": "referenced_paths_exist",
+        "status": "passed",
+        "message": "No obvious file path mentions found"
+      }
+    ]
+  },
+  "judges": {
+    "content": {
+      "scale": {
+        "max": 5,
+        "min": 1
+      },
+      "success": true,
+      "evaluation": {
+        "scores": {
+          "conciseness": {
+            "score": 4,
+            "reasoning": "The body is lean and assumes Claude's competence — no concept explanations, no padding, with useful micro-expansions like \"3P updates (Progress, Plans, Problems)\". Not 5 because the \"When to use this skill\" list and the \"Keywords\" section largely restate the frontmatter description and could be trimmed."
+          },
+          "actionability": {
+            "score": 2,
+            "reasoning": "The body is only a routing table: it names concrete paths (\"examples/3p-updates.md\", \"examples/company-newsletter.md\", \"examples/faq-answers.md\", \"examples/general-comms.md\") but every actual instruction (\"formatting, tone, and content gathering\") is deferred to files that are not present in the bundle, so the guidance dead-ends. It is above 1 because the routing itself is specific and well-labeled, but the specific steps needed to execute the writing task are entirely missing."
+          },
+          "workflow_clarity": {
+            "score": 4,
+            "reasoning": "The three-step sequence (identify type → load the guideline file → follow its instructions) is clearly ordered, and the fallback \"If the communication type doesn't match any existing guideline, ask for clarification\" acts as an explicit checkpoint for ambiguity. Not 5 because there are no validation or feedback steps beyond the fallback, and step 2 depends on files that do not exist in the bundle."
+          },
+          "progressive_disclosure": {
+            "score": 1,
+            "reasoning": "Structurally the body is a clean overview with well-signaled one-level-deep references, but per the rubric's bundle-structure guideline the references must be scored against the actual bundle — and no examples/ directory or any bundle files exist, so all four referenced paths are dangling and the skill's content is unreachable. Navigation to the substantive guidance is impossible as shipped, which is the defining failure of the lowest anchor."
+          }
+        },
+        "suggestions": [
+          "Ship the four referenced guideline files (examples/3p-updates.md, examples/company-newsletter.md, examples/faq-answers.md, examples/general-comms.md) — without them the skill contains no actual writing guidance.",
+          "As a defensive fallback, inline a minimal format skeleton for the most common type (e.g. a 3P update structure) so the skill degrades gracefully if a guideline file is unavailable.",
+          "Trim redundancy: the \"When to use this skill\" list and \"Keywords\" section both restate the frontmatter description; consolidate to save tokens."
+        ],
+        "overall_assessment": "The SKILL.md body is a concise, clearly sequenced router that would be effective if its target files existed, but the bundle ships no examples/ directory — all four referenced guideline files are missing, leaving the skill with no substantive instructions. As delivered, it is a table of contents for a book that isn't in the box."
+      },
+      "weightedScore": 2.95,
+      "normalizedScore": 0.4875
+    },
+    "description": {
+      "scale": {
+        "max": 5,
+        "min": 1
+      },
+      "success": true,
+      "evaluation": {
+        "scores": {
+          "specificity": {
+            "score": 2,
+            "reasoning": "The only action verb is the generic \"write\", padded with vague phrases like \"a set of resources\", \"all kinds\", and \"formats that my company likes to use\"; the enumerated communication types are concrete but the capability description is not. The rubric also mandates a 1-point reduction for first-person voice (\"to help me write\", \"my company\"), bringing the base of 3 down to 2 — not 1, because the domain and seven concrete deliverable types are clearly named."
+          },
+          "completeness": {
+            "score": 4,
+            "reasoning": "Both parts are present: the \"when\" is fully explicit with a concrete trigger list (\"Claude should use this skill whenever asked to write some sort of internal communications (status reports, …)\"), but the \"what\" rests on vague padding (\"a set of resources\", \"formats that my company likes to use\") rather than concrete capability statements. This sits between anchor 4 and 5, closer to 4 because the what-side is noticeably less crisp than the when-side."
+          },
+          "trigger_term_quality": {
+            "score": 4,
+            "reasoning": "Phrases like \"status reports\", \"leadership updates\", \"3P updates\", \"company newsletters\", \"FAQs\", \"incident reports\", and \"project updates\" are natural terms users would say when needing this skill. Not 5 because common variations such as \"weekly status\", \"exec update\", or \"all-hands\" are missing; not 3 because coverage goes well beyond a couple of generic keywords."
+          },
+          "distinctiveness_conflict_risk": {
+            "score": 4,
+            "reasoning": "\"Internal communications\" anchored by distinctive formats like \"3P updates\" and \"company newsletters\" carves a clear niche with minimal conflict risk. Not 5 because broader items such as \"FAQs\" and \"status reports\" could overlap with general writing or documentation skills."
+          }
+        },
+        "suggestions": [
+          "Rewrite in third person with concrete verbs, e.g. \"Writes internal communications — 3P updates, status reports, leadership updates, company newsletters, FAQs, incident reports — following the company's preferred formats and templates.\"",
+          "Replace vague padding (\"a set of resources\", \"all kinds\", \"formats that my company likes to use\") with specific capabilities such as \"applies the company's standard structures and tone guidelines for each format\".",
+          "Add common trigger variations such as \"weekly status\", \"exec update\", or \"team update\" to broaden natural keyword coverage."
+        ],
+        "overall_assessment": "The description has strong trigger coverage and an explicit, well-specified \"when to use\" clause with a concrete list of communication types. It is weakened by first-person voice, a single generic action verb, and vague padding on the capability side (\"a set of resources\", \"formats that my company likes to use\"). Rewriting in third person with concrete capability statements would lift it substantially."
+      },
+      "weightedScore": 3.6,
+      "normalizedScore": 0.65
+    }
+  },
+  "scoring": {
+    "components": [
+      {
+        "id": "validation",
+        "weight": 0.19999999999999996,
+        "normalized": 1
+      },
+      {
+        "id": "description",
+        "weight": 0.4,
+        "normalized": 0.65
+      },
+      {
+        "id": "content",
+        "weight": 0.4,
+        "normalized": 0.4875
+      }
+    ]
+  },
+  "review": {
+    "reviewScore": 65
+  }
+}

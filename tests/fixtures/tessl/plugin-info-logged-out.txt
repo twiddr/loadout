@@ -1,0 +1,3 @@
+By using Tessl, you agree to our Terms: https://tessl.io/policies/terms
+
+✘ Please authenticate with Tessl to continue. Run `tessl login` to sign up or log in.

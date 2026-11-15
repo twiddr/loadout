@@ -1,0 +1,4382 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f4f1ea;
+  --grid: #eae5da;
+  --rail: #ebe7dd;
+  --rail-border: #d8d2c4;
+  --tab-active: #dcd6c8;
+  --tab-fg: #5c574e;
+  --panel: #ece8de;
+  --surface: #fffdf8;
+  --card: #fffdf8;
+  --card-border: #d6cebc;
+  --card-hover: #fbf8f1;
+  --card-hover-border: #b8b1a0;
+  --inset: #f7f4ed;
+  --inset-border: #e2dccf;
+  --field: #fffdf8;
+  --control-border: #c6bda9;
+  --divider: #cbc2ad;
+  --fg: #2e2b26;
+  --fg-strong: #2e2b26;
+  --fg-2: #4e4a42;
+  --muted: #6b665c;
+  --faint: #7a756b;
+  --ink: #585a5f;
+  --on-ink: #fffdf8;
+  --eyebrow: #6f6748;
+  --amber: #e9a04b;
+  --on-amber: #1f1a12;
+  /* Amber where it is text (BUSY, JUST NOW, scores, fix tag, drift marks): 4.6:1 on the page. */
+  --amber-text: #a65915;
+  --strip-bg: #faf3e6;
+  --strip-border: #d9b87f;
+  --strip-label: #8a4f0e;
+  --strip-fg: #5a3a10;
+  --update-card: #fdf9f1;
+  --amber-outline: #cf9a55;
+  --hash: #8f703f;
+  --recon-bg: #faf4e8;
+  --recon-border: #dcc194;
+  --recon-fg: #5a3a10;
+  --danger: #a1372c;
+  --danger-strong: #7a2e25;
+  --danger-bg: #fbeeec;
+  --danger-border: #e3b4ad;
+  --ok: #2f7d4a;
+  --ok-chip: #2f7d4a;
+  --ok-chip-border: #b5d6bf;
+  --ok-bg: #eef6f0;
+  --rank-outline: #8d7353;
+  --toggle-on: #2f5f8a;
+  --on-toggle-on: #ffffff;
+  --toggle-off-border: #b8b1a0;
+  --toggle-off-fg: #6b665c;
+  --deploy-on: #cf7d3f;
+  --deploy-on-hover: #c4733a;
+  --on-deploy-on: #1f1a12;
+  --deploy-hover-border: #c98a55;
+  --stowed-bg: #f4f1ea;
+  --stowed-border: #b6ae9a;
+  --log-card: #fffdf8;
+  --src-local-tile: #cddcec;
+  --src-local-icon: #26527d;
+  --src-local: #336a9f;
+  --src-github-tile: #e0d3ef;
+  --src-github-icon: #5b3f86;
+  --src-github: #6f4fa8;
+  --src-tessl-tile: #cbe6d4;
+  --src-tessl-icon: #255f3b;
+  --src-tessl: #2a8254;
+  /* claude.ai synced copies (sky): the card's cloud and Recon's SYNCED tag. */
+  --synced: #1f7aa6;
+  --brand-accent: var(--amber);
+  --sans: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --stencil: 'Black Ops One', var(--sans);
+  --rail-width: 105px;
+  --squad-width: 304px;
+  --scrollbar: 10px;
+  --cut: 14px;
+  --cut-card: 16px;
+  /* Right edge of the green traffic light (trafficLightPosition x 22 + 60 px of buttons + 8 px gap). */
+  --traffic-light-end: 90px;
+  /* Height of the band the traffic lights sit in (trafficLightPosition y 16). */
+  --traffic-light-row: 46px;
+
+  /* Aliases that the shared control styles below still use. */
+  --active: var(--tab-active);
+  --border: var(--divider);
+  --accent: var(--toggle-on);
+  --error: var(--danger);
+  --brand-ink: var(--ink);
+  --control-height: 32px;
+  --radius: 4px;
+  --float-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.28), 0 2px 6px rgb(0 0 0 / 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #2a2a2a;
+    --grid: #2e2e2e;
+    --rail: #1f1f1f;
+    --rail-border: #343434;
+    --tab-active: #383838;
+    --tab-fg: #c8c8c8;
+    --panel: #232323;
+    --surface: #232323;
+    --card: #303030;
+    --card-border: #3e3e3e;
+    --card-hover: #343434;
+    --card-hover-border: #5a5a5a;
+    --inset: #262626;
+    --inset-border: #363636;
+    --field: #1f1f1f;
+    --control-border: #4a4a4a;
+    --divider: #3a3a3a;
+    --fg: #e8e8e8;
+    --fg-strong: #f2f2f2;
+    --fg-2: #c8c8c8;
+    --muted: #a0a0a0;
+    --faint: #8f8f8f;
+    --ink: #e8dfc4;
+    --on-ink: #1f1b12;
+    --eyebrow: #aca487;
+    --amber-text: #e9a04b;
+    --strip-bg: #2e271d;
+    --strip-border: #5b4527;
+    --strip-label: #f0b56a;
+    --strip-fg: #f0dcbc;
+    --update-card: #322d25;
+    --amber-outline: #6b5230;
+    --hash: #8f7a58;
+    --recon-bg: #2a2620;
+    --recon-border: #4a3c28;
+    --recon-fg: #e6cfa9;
+    --danger: #e58a80;
+    --danger-strong: #f2b3ab;
+    --danger-bg: #2e2424;
+    --danger-border: #6a3b36;
+    --ok: #7cc48a;
+    --ok-chip: #8fd19c;
+    --ok-chip-border: #3d5c44;
+    --ok-bg: #263029;
+    --toggle-on: #7fa9dc;
+    --on-toggle-on: #1b1b1b;
+    --toggle-off-border: #4a4a4a;
+    --toggle-off-fg: #8f8f8f;
+    --deploy-on: #c4834f;
+    --deploy-on-hover: #d39260;
+    --on-deploy-on: #1b1b1b;
+    --deploy-hover-border: #a87a52;
+    --stowed-bg: #242424;
+    --stowed-border: #444444;
+    --log-card: #222222;
+    --src-local-tile: #2d3846;
+    --src-local-icon: #9cc0ea;
+    --src-local: #6f9ccf;
+    --src-github-tile: #3a2f47;
+    --src-github-icon: #c9aef0;
+    --src-github: #b28ee0;
+    --src-tessl-tile: #23403c;
+    --src-tessl-icon: #7fd1c2;
+    --src-tessl: #5fbfae;
+    --synced: #7cc7e8;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cut {
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+/* The clip cuts the border off the corner; this line redraws it in the element's own top border. */
+.cut::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: calc(100% + 1px - var(--cut));
+  width: calc(var(--cut) * 1.4142);
+  border-top: inherit;
+  transform: rotate(45deg);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.hazard::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: repeating-linear-gradient(135deg, var(--amber) 0 8px, var(--strip-bg) 8px 16px);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--eyebrow);
+}
+.title {
+  font-family: var(--stencil);
+  font-size: 34px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+aside,
+header {
+  cursor: default;
+  user-select: none;
+}
+
+button,
+a.button {
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg);
+  background: var(--field);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  height: var(--control-height);
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+button:not(.nav):hover:not(:disabled),
+a.button:hover {
+  background: var(--active);
+}
+/* A primary button keeps the shared control border, so it matches a plain button beside it. */
+button.primary {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 85%, var(--bg));
+}
+button.icon {
+  width: var(--control-height);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  justify-content: center;
+}
+button.icon:hover:not(:disabled) {
+  color: var(--fg);
+}
+button.small,
+a.button.small {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+button:focus-visible,
+a.button:focus-visible,
+input:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+button:disabled {
+  opacity: 0.45;
+}
+
+input[type='text']::placeholder {
+  color: var(--faint);
+  opacity: 0.6;
+}
+input[type='text'] {
+  font: inherit;
+  color: var(--fg);
+  background: var(--field);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  height: var(--control-height);
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+input[type='checkbox'].switch {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--active);
+  border: 1px solid var(--border);
+  position: relative;
+  margin: 0;
+  box-sizing: border-box;
+}
+input[type='checkbox'].switch::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+input[type='checkbox'].switch:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type='checkbox'].switch:checked::after {
+  left: 13px;
+}
+input[type='checkbox'].switch:disabled {
+  opacity: 0.4;
+}
+
+.float {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: var(--float-shadow);
+}
+
+.tip {
+  position: relative;
+  display: inline-flex;
+}
+.tip-text {
+  position: absolute;
+  z-index: 3;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg);
+  white-space: nowrap;
+  text-align: left;
+  visibility: hidden;
+}
+/* Keyboard focus shows the tip too; a mouse click must not leave it open after the pointer leaves. */
+.tip:hover .tip-text,
+.tip:is(:focus-visible, :has(:focus-visible)) .tip-text {
+  visibility: visible;
+}
+
+.muted {
+  color: var(--muted);
+}
+.bad {
+  color: var(--error);
+}
+.mono {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.notice {
+  margin: 0 28px 12px;
+  padding: 8px 12px;
+  color: var(--danger-strong);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius);
+}
+.notice.dismissable {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 6px;
+}
+.notice-text {
+  flex: 1;
+  min-width: 0;
+}
+button.notice-close {
+  flex: none;
+  color: var(--danger-strong);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 12px;
+}
+th {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  white-space: nowrap;
+}
+td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, var(--bg));
+  vertical-align: middle;
+}
+
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+/* Sits on the eyebrow row, above the squad panel's drag strip; clicks pass through to the drag region.
+   On the skill page with the PLATOON panel hidden, the Show platoon button sits left of the version. */
+.app-corner {
+  position: fixed;
+  top: 17px;
+  right: 20px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 12px;
+  pointer-events: none;
+}
+.app-version {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+  opacity: 0.6;
+}
+/* The PLATOON toggles: a 22px hit box round a 14px icon. Both centre the icon on the version's line. */
+button.squad-toggle,
+button.platoon-show {
+  width: 22px;
+  height: 22px;
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+/* The Show button waits for the panel to slide out, so the two icons never cross. */
+button.platoon-show {
+  margin-left: -4px;
+  animation: platoon-show 120ms 200ms both;
+}
+@keyframes platoon-show {
+  from {
+    opacity: 0;
+  }
+}
+/* UPDATE ›: amber text at rest, a plate on hover; the 22 px hit box matches the PLATOON toggles.
+   The negative right margin keeps the text's right edge where the version label ends. */
+button.app-update {
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+  gap: 4px;
+  height: 22px;
+  padding: 0 6px;
+  margin-right: -6px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  font-size: 10px;
+  color: var(--amber-text);
+}
+button.app-update:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--amber-text) 14%, transparent);
+}
+.rail {
+  width: var(--rail-width);
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 14px;
+  background: var(--rail);
+  border-right: 1px solid var(--rail-border);
+}
+.rail-drag {
+  height: 40px;
+  width: 100%;
+  flex: none;
+}
+.rail-logo {
+  margin: 6px 0 12px;
+}
+.rail-tab {
+  position: relative;
+  width: 80px;
+  box-sizing: border-box;
+  padding: 9px 0 7px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--tab-fg);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: default;
+}
+.rail-tab:hover:not(.on) {
+  background: color-mix(in srgb, var(--tab-active) 55%, transparent);
+  color: var(--fg-strong);
+}
+.rail-tab.on {
+  background: var(--tab-active);
+  color: var(--fg-strong);
+}
+.rail-tab:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+.rail-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--amber);
+  color: var(--on-amber);
+  /* The tab label's type; no letter-spacing, which would push the digit off centre. */
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rail-dot {
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+/* Lifts the appearance and settings buttons 30 px above the status line. */
+button.rail-settings {
+  margin-bottom: 30px;
+}
+.rail-status {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--ok);
+}
+.rail-status.busy {
+  color: var(--amber-text);
+}
+.main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* Top padding puts the eyebrow on the traffic-light row (trafficLightPosition y 16). */
+.page-header {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 28px 16px;
+}
+.page-header .eyebrow {
+  min-height: 1lh;
+  letter-spacing: 0.18em;
+}
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-title-row .title {
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.page-line {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.page-actions {
+  display: flex;
+  gap: 8px;
+}
+/* The gutter is always there, so the cards keep their width when the panel starts to scroll. */
+.squad {
+  width: var(--squad-width);
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 calc(20px - var(--scrollbar)) 20px 20px;
+  background: var(--panel);
+  border-left: 1px solid var(--rail-border);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+/* The skill page hides the panel: it slides out past the window edge, and the main column takes its width. */
+.squad.hidden {
+  margin-right: calc(-1 * var(--squad-width));
+}
+.squad.sliding {
+  transition: margin-right 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+/* The Hide button fades as the panel leaves; it would pass under the version number. */
+.squad.hidden button.squad-toggle {
+  opacity: 0;
+  transition: opacity 80ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .squad.sliding {
+    transition: none;
+  }
+  button.platoon-show {
+    animation: none;
+  }
+}
+/* Window drag strip; its height puts the PLATOON title on the Recruit skill button's line. */
+.squad-drag {
+  position: relative;
+  flex: none;
+  height: 28px;
+  margin: 0 calc(var(--scrollbar) - 20px) 0 -20px;
+}
+/* The icon's left edge on the PLATOON title's, its centre on the version's line. */
+.squad-drag button.squad-toggle {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+}
+.squad-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.squad-title {
+  margin: 0;
+  font-family: var(--stencil);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.squad-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+.squad-none {
+  font-size: 12px;
+}
+.agent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+.agent-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.agent-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.agent-folder {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.chip.ok {
+  color: var(--ok);
+}
+.chip.bad {
+  color: var(--danger);
+}
+.chip.muster {
+  color: var(--amber-text);
+}
+.muster-note {
+  letter-spacing: 0;
+}
+.kit-line {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.kit-line b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.slots {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 5px;
+}
+.slot {
+  display: block;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+.slot.local {
+  background: var(--src-local);
+}
+.slot.github {
+  background: var(--src-github);
+}
+.slot.tessl {
+  background: var(--src-tessl);
+}
+.slot.empty {
+  border: 1.5px dashed var(--toggle-off-border);
+}
+button.enlist {
+  flex: none;
+  height: 40px;
+  justify-content: center;
+  border: 1px dashed var(--control-border);
+  background: transparent;
+  color: var(--ink);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+}
+.recon-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--recon-bg);
+  border: 1px solid var(--recon-border);
+}
+.recon-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--strip-label);
+}
+.recon-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--recon-fg);
+}
+button.recon-link {
+  align-self: flex-start;
+  height: auto;
+  padding: 2px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--strip-label);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+}
+button.recon-link:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
+}
+.systems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--divider);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.systems-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+button.small-icon {
+  width: 22px;
+  height: 22px;
+}
+.system {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.system-name {
+  flex: 1;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.swatch {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: var(--ok);
+}
+.swatch.off {
+  background: var(--danger);
+}
+.path-note {
+  font-size: 10.5px;
+  letter-spacing: 0;
+}
+.account {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--divider);
+  color: var(--faint);
+}
+/* An install hint is as wide as its row, so it stays inside the panel and adds no sideways scroll. */
+.system {
+  position: relative;
+}
+.system .tip {
+  position: static;
+}
+.squad .tip-text {
+  top: auto;
+  bottom: 100%;
+  right: 0;
+  margin: 0 0 4px;
+  white-space: normal;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+.count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+.spacer {
+  flex: 1;
+}
+.view {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.note {
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 12px;
+}
+.load-error-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 24px;
+}
+.load-error-body .notice {
+  max-width: 520px;
+  margin: 0;
+  border-left: 3px solid var(--danger);
+}
+.view th:first-child,
+.view td:first-child {
+  padding-left: 16px;
+}
+.dangling {
+  font-size: 12px;
+  margin-left: 6px;
+}
+.menu-pop {
+  inset: auto;
+  margin: 0;
+  padding: 4px;
+  min-width: 180px;
+  box-sizing: border-box;
+  color: var(--fg);
+  position-area: bottom span-left;
+  position-try-fallbacks: flip-block;
+}
+.menu-pop:popover-open {
+  margin-block: 4px;
+}
+.menu-pop button {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  justify-content: flex-start;
+}
+.menu-pop button:hover:not(:disabled) {
+  background: var(--active);
+}
+.menu-sep {
+  height: 0;
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+button.requisition {
+  height: 32px;
+  gap: 10px;
+  letter-spacing: 0.08em;
+}
+button.requisition .divider {
+  width: 1px;
+  height: 18px;
+  background: color-mix(in srgb, var(--on-ink) 40%, transparent);
+}
+.filter-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 28px 16px;
+}
+label.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  height: 30px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--field);
+  border: 1px solid var(--control-border);
+  color: var(--faint);
+}
+label.search input {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: 13px;
+}
+button.filter-chip {
+  height: 30px;
+  gap: 6px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--fg-2);
+  background: var(--inset);
+  border-color: var(--control-border);
+}
+button.filter-chip[aria-pressed='true'] {
+  color: var(--on-ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+button.filter-chip[aria-pressed='true']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 85%, var(--bg));
+  border-color: color-mix(in srgb, var(--ink) 85%, var(--bg));
+}
+.swatch-sq {
+  width: 8px;
+  height: 8px;
+}
+.swatch-sq.local {
+  background: var(--src-local);
+}
+.swatch-sq.github {
+  background: var(--src-github);
+}
+.swatch-sq.tessl {
+  background: var(--src-tessl);
+}
+/* The right padding plus the scrollbar gutter lines the cards up with the header (28px). */
+.card-view {
+  padding: 0 calc(28px - var(--scrollbar)) 24px 28px;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  align-content: start;
+}
+.skill-card {
+  --cut: var(--cut-card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+.skill-card:hover {
+  background: var(--card-hover);
+  border-color: var(--card-hover-border);
+}
+.skill-card.stowed {
+  background: var(--stowed-bg);
+  border: 1px dashed var(--stowed-border);
+}
+.skill-card.stowed:hover {
+  border-color: var(--card-hover-border);
+}
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 14px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+.card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tile {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tile.local {
+  background: var(--src-local-tile);
+  color: var(--src-local-icon);
+}
+.tile.github {
+  background: var(--src-github-tile);
+  color: var(--src-github-icon);
+}
+.tile.tessl {
+  background: var(--src-tessl-tile);
+  color: var(--src-tessl-icon);
+}
+.skill-card.stowed .tile {
+  opacity: 0.6;
+}
+.card-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+button.card-name {
+  max-width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  /* The chevrons' colour. */
+  color: var(--ink);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+button.card-name:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
+}
+.skill-card.stowed button.card-name,
+.skill-card.broken button.card-name {
+  color: var(--muted);
+}
+.card-path {
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-chip {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.card-chip.bad {
+  color: var(--danger-strong);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+}
+.card-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-foot button.icon {
+  color: var(--fg-2);
+}
+.card-foot button.icon:hover:not(:disabled),
+.card-foot button.icon:has(+ :popover-open) {
+  color: var(--fg-strong);
+  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  border-color: var(--control-border);
+}
+label.toggle {
+  position: relative;
+  width: 30px;
+  height: 22px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px dashed var(--toggle-off-border);
+  color: var(--toggle-off-fg);
+}
+label.toggle:hover:has(input:not(:disabled)) {
+  border-color: var(--deploy-hover-border);
+  color: var(--fg);
+}
+label.toggle:has(input:checked) {
+  border: 1px solid var(--deploy-on);
+  background: var(--deploy-on);
+  color: var(--on-deploy-on);
+}
+label.toggle:hover:has(input:checked:not(:disabled)) {
+  border-color: var(--deploy-on-hover);
+  background: var(--deploy-on-hover);
+  color: var(--on-deploy-on);
+}
+label.toggle:has(input:focus-visible) {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+label.toggle:has(input:disabled) {
+  opacity: 0.45;
+}
+/*
+ * One tip for every kit slot, outside the agent cards: a card's cut corner is a clip-path, which
+ * clips a tip inside the card. The tip is fixed to the slot under the pointer.
+ */
+.squad .slot-tip {
+  position: fixed;
+  position-anchor: --slot-tip;
+  position-area: top;
+  position-try-fallbacks: flip-block;
+  inset: auto;
+  margin: 4px 0;
+  width: max-content;
+  white-space: nowrap;
+  visibility: visible;
+  pointer-events: none;
+}
+label.toggle input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+}
+.skill-card .tip-text {
+  top: auto;
+  bottom: 100%;
+  margin: 0 0 4px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+/* Packs (M14): the visual contract in docs/sparring/2026-11-13-skill-packs.md, unchanged. */
+/* "Some deployed": outline with orange lines; the agent code keeps the normal text colour. */
+label.toggle.partial {
+  border: 1px solid var(--deploy-on);
+  color: var(--fg);
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--deploy-on) 75%, transparent) 0 1.2px,
+    transparent 1.2px 4.2px
+  );
+}
+
+/* The SKILLS | PACKS toggle: two filter chips joined, at the end of the filter row. */
+.view-switch {
+  display: flex;
+  margin-left: auto;
+}
+.view-switch button.filter-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 0 12px;
+}
+.view-switch button.filter-chip:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.view-switch button.filter-chip:last-child {
+  border-radius: 0 4px 4px 0;
+  margin-left: -1px;
+}
+
+/* The pack card: a skill card with a stacked tile. */
+.pack-card .tile {
+  box-shadow:
+    4px -4px 0 -1px color-mix(in srgb, currentColor 38%, var(--card)),
+    8px -8px 0 -2px color-mix(in srgb, currentColor 18%, var(--card));
+}
+.pack-card .card-top-end b {
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+/* The header line of an opened pack. */
+.page-line.in-pack {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-line .pack-name {
+  color: var(--fg-strong);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.page-line button.back {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--amber-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.page-line .sep {
+  color: var(--faint);
+}
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 24px;
+  text-align: center;
+  border: 1px dashed var(--stowed-border);
+  background: var(--stowed-bg);
+  border-radius: 4px;
+}
+.empty-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.no-match {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.log-view {
+  padding: 0 calc(28px - var(--scrollbar)) 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.run-strip {
+  flex: none;
+  border-radius: var(--radius);
+  background: var(--strip-bg);
+  border: 1px solid var(--strip-border);
+  overflow: hidden;
+}
+.run-strip-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px 10px;
+  color: var(--strip-label);
+}
+.run-strip-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+.run-strip-command {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--strip-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.run-card {
+  flex: none;
+  border-radius: var(--radius);
+  background: var(--log-card);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+.run-card.failed {
+  border-color: var(--danger-border);
+}
+.run-card.running {
+  border-color: var(--strip-border);
+}
+.run-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  background: var(--inset);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+}
+.run-id {
+  width: 64px;
+  color: var(--faint);
+}
+.run-action {
+  width: 70px;
+  color: var(--eyebrow);
+}
+.run-command {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.run-prompt {
+  color: var(--faint);
+}
+.run-chip {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--control-border);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.run-chip.running {
+  color: var(--on-amber);
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.run-chip.ok {
+  color: var(--ok-chip);
+  border-color: var(--ok-chip-border);
+}
+.run-chip.bad {
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+.run-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px 10px 160px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.run-line {
+  color: var(--fg-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.run-line.stderr {
+  color: var(--danger);
+}
+.run-line.meta {
+  color: var(--faint);
+}
+.swatch-sq.bad {
+  background: var(--danger);
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar);
+  height: var(--scrollbar);
+  background: transparent;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background-clip: padding-box;
+  background-color: transparent;
+}
+.scrolling::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--fg) 35%, transparent);
+}
+
+.drag {
+  -webkit-app-region: drag;
+}
+.drag :is(button, input, summary, a, [tabindex]) {
+  -webkit-app-region: no-drag;
+}
+/* A click on a drag region never reaches the page, so an open menu would not close. */
+body:has(:popover-open) :is(.drag, .dialog-drag) {
+  -webkit-app-region: no-drag;
+}
+
+/* A modal dialog stops the drag regions of the page behind it, so a dialog covers the window and
+   holds its own drag strip as its first child: a later region wins, so the box after it stays
+   clickable. The box is what the user sees; the dim is the ::backdrop. */
+dialog.cover {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+dialog.cover[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+dialog.cover:focus {
+  outline: none;
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+.dialog-drag {
+  -webkit-app-region: drag;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+}
+/* The max-height and overflow are those a modal dialog box had from the browser. The clip-path
+   also makes a stacking context, so a tall box paints over the absolute strip it meets. */
+.dialog-box {
+  -webkit-app-region: no-drag;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px;
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, 0 100%);
+  width: 460px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 6px - 2em);
+  overflow: auto;
+  box-sizing: border-box;
+}
+dialog h2 {
+  margin: 0;
+}
+dialog .title {
+  font-size: 22px;
+}
+dialog p {
+  margin: 0;
+}
+dialog .label,
+dialog legend {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--eyebrow);
+}
+dialog .notice {
+  margin: 0;
+  border-left: 3px solid var(--danger);
+  overflow-wrap: anywhere;
+}
+/* The Fork dialog's occurrence lines wrap, like the Log's lines, so a long line shows whole. */
+dialog pre.copy-block {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+/* Dialog buttons share one width, so Cancel and the primary action line up. */
+.actions button {
+  min-width: 88px;
+  justify-content: center;
+}
+.small-note {
+  font-size: 12px;
+}
+/* The update dialog: the release-notes link, COPY and Close share the box's right edge. */
+dialog.update .dialog-box {
+  width: 560px;
+}
+.update-lead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.update-lead a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--amber-text);
+  text-decoration: none;
+}
+/* The steps: a 22 px number column as on BOOT CAMP; the command box sits under its step's text. */
+.update-steps {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.update-steps li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 6px;
+}
+.update-steps li > div {
+  display: grid;
+  gap: 4px;
+}
+.update-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+}
+/* The URL is longer than the box: the command wraps instead of scrolling. */
+dialog.update .bc-cmd pre {
+  white-space: pre-wrap;
+}
+.update-text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+/* The steps fold under INSTALL BY HAND; the chevron points down when they are open. */
+.update-hand summary {
+  display: inline-block;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+.update-hand summary::-webkit-details-marker {
+  display: none;
+}
+.update-hand[open] summary {
+  margin-bottom: 8px;
+}
+.update-chevron {
+  display: inline-block;
+}
+.update-hand[open] .update-chevron {
+  transform: rotate(90deg);
+}
+/* The progress line: the text row over a 4 px bar that ends at the box's right edge. */
+.update-progress {
+  display: grid;
+  gap: 6px;
+}
+.update-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+}
+.update-bar {
+  height: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.update-bar span {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+}
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Publish: one label column; each value sits on its label's baseline. */
+.publish-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 14px 16px;
+}
+.publish-grid > .seg {
+  justify-self: start;
+  align-self: baseline;
+}
+.publish-visibility {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.field-row input[type='text'] {
+  flex: 1;
+  min-width: 0;
+}
+/* As wide as the dialog's action buttons, so Scan lines up with Close below it. */
+.same-w {
+  min-width: 88px;
+  justify-content: center;
+}
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field-label input[type='text'] {
+  width: 100%;
+}
+.box {
+  border: 1px solid var(--card-border);
+  background: var(--inset);
+  border-radius: var(--radius);
+  overflow: auto;
+  max-height: 240px;
+}
+.box table {
+  margin: 0;
+}
+.box tr:last-child td {
+  border-bottom: 0;
+}
+/* The Registry dialog's plugin dropdown: a chevron inside the field opens it; a row fills the field. */
+.combo {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+.combo input[type='text'] {
+  width: 100%;
+  padding-right: 30px;
+}
+button.combo-open {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 28px;
+}
+.plugin-list {
+  max-height: 232px;
+  overflow-y: auto;
+  min-width: anchor-size(width);
+  max-width: anchor-size(width);
+}
+.plugin-note {
+  margin: 0;
+  padding: 4px 8px;
+}
+.menu-pop button.plugin-row {
+  display: grid;
+  grid-template-columns: max-content max-content minmax(0, 1fr) max-content;
+  align-items: baseline;
+  gap: 10px;
+  height: 28px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+.plugin-version,
+.plugin-taken {
+  color: var(--muted);
+}
+.plugin-taken {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* The Recruit dialog: long paths, and up to 20 difference lines, scroll inside the dialog. */
+dialog.recruit .dialog-box {
+  width: 560px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.recruit-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px 16px;
+  margin: 0;
+}
+.recruit-facts dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.recruit-notes,
+.recruit-folder,
+.recruit-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.recruit-steps ol {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.recruit-picked {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.recruit-chain {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+dialog.settings .actions {
+  justify-content: center;
+}
+dialog.settings .dialog-box {
+  width: 600px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+/* The button keeps its earlier 20 px box; only the text is smaller (the padding makes up the width). */
+button.small.settings-btn {
+  height: 20px;
+  padding: 0 9px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--divider);
+}
+.settings-head,
+dialog legend.settings-head {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+.settings-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.settings-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+}
+.settings-row .grow {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The tip opens upward across the dialog width: the dialog's clip-path cuts anything outside its box. */
+.commit-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-label input {
+  margin: 0;
+}
+.commit-row .tip {
+  position: static;
+  color: var(--muted);
+}
+.commit-row .tip-text {
+  top: auto;
+  bottom: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  white-space: normal;
+  line-height: 1.45;
+}
+.commit-row .tip-text code {
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* A dropdown: a field-like trigger and a menu-pop list (see the Publish dialog). */
+button.select {
+  min-width: 220px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px;
+}
+.select-value {
+  font-family: var(--mono);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.select-pop {
+  position-area: bottom span-right;
+  min-width: anchor-size(width);
+}
+.select-pop button {
+  justify-content: space-between;
+}
+label.workspace-pick,
+label.workspace-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+label.workspace-default {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+label.workspace-default > span {
+  position: relative;
+  top: 3px;
+}
+/* An install hint opens upward from the row, right of the name, and wraps at the dialog edge:
+   the dialog scrolls, so a tip below the last row would add a scroll. */
+.settings-row:has(> .tip) {
+  position: relative;
+}
+.settings-row > .tip {
+  position: static;
+  cursor: default;
+}
+.settings-row .tip-text {
+  top: auto;
+  bottom: 100%;
+  left: 122px;
+  right: 0;
+  margin: 0 0 4px;
+  white-space: normal;
+  line-height: 1.45;
+}
+.settings-name {
+  flex: none;
+  width: 110px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.agent-row {
+  display: flex;
+  /* The folder sits on the agent name's baseline; the switch stays centred. */
+  align-items: baseline;
+  gap: 12px;
+}
+.agent-row .switch {
+  align-self: center;
+}
+.agent-label {
+  flex: none;
+  width: 110px;
+}
+.agent-row .grow {
+  flex: 1;
+  min-width: 0;
+}
+fieldset.segmented {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+fieldset.segmented legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+.seg {
+  align-self: flex-start;
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+}
+.segmented label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: relative;
+  padding: 3px 12px;
+  border-radius: 5px;
+}
+.segmented label:has(input:checked) {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+.segmented label:has(input:focus-visible) {
+  outline: 1px solid var(--accent);
+}
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+.recon-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 18px;
+  padding: 0 28px 24px;
+}
+.recon-main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.recon-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/*
+ * Every column heading is 16 px high and 12 px above its first box, so the first boxes of the
+ * main and side columns line up (the columns' own gaps are 18 and 14 px).
+ */
+.recon-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 16px;
+}
+.recon-side > .recon-title {
+  line-height: 16px;
+}
+.recon-main > .recon-head {
+  margin-bottom: -6px;
+}
+.recon-side > .recon-head,
+.recon-side > .recon-title {
+  margin-bottom: -2px;
+}
+.recon-title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+/* A section title stays on one line; the sentence beside it wraps. */
+.recon-head .recon-title {
+  flex: none;
+}
+.recon-sub {
+  font-size: 12px;
+  color: var(--faint);
+}
+.recon-empty {
+  margin: 0;
+  font-size: 13px;
+}
+/* The Intel page with no field update: a standby card, centred across, its top on the side column's first box. */
+.intel-empty {
+  margin: 0 auto auto;
+  width: min(520px, 100%);
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+.intel-empty-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px 32px 26px;
+  text-align: center;
+}
+.radar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--strip-label);
+  background: var(--strip-bg);
+  border: 1px solid var(--amber-outline);
+}
+.radar::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  animation: radar-pulse 2s ease-out infinite;
+}
+.radar.quiet {
+  color: var(--ok);
+  border-color: var(--ok-chip-border);
+}
+.radar.quiet::after {
+  border-color: var(--ok);
+}
+@keyframes radar-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+.intel-empty-title {
+  margin: 0;
+  font-family: var(--stencil);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.intel-empty-text {
+  margin: 0;
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+.intel-empty-text code {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.intel-empty-counts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.intel-empty-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--fg-2);
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+}
+/* Separate borders, so the table's own border and round corners show like a side panel's. */
+table.recon-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  background: var(--inset);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.recon-table th {
+  padding: 9px 16px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  background: var(--card);
+}
+.recon-table td {
+  padding: 11px 16px;
+  font-size: 13px;
+}
+.recon-name {
+  font-weight: 600;
+}
+.recon-target {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.recon-path {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recon-tag {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--fg-2);
+  border: 1px solid var(--control-border);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+.recon-tag.folder {
+  color: var(--src-local);
+  border-color: color-mix(in srgb, var(--src-local) 55%, transparent);
+}
+.recon-tag.synced {
+  color: var(--synced);
+  border-color: color-mix(in srgb, var(--synced) 55%, transparent);
+}
+.recon-tag.bad {
+  color: var(--danger-strong);
+  border-color: var(--danger-border);
+}
+.recon-tag.warn {
+  color: var(--strip-label);
+  border-color: var(--strip-border);
+}
+/* The claude.ai synced skills under `synced`: names and the fix block share one inset left edge. */
+/* The `synced` folder name folds its rows; it reads as the plain name with a chevron. */
+button.recon-fold {
+  height: auto;
+  padding: 0;
+  gap: 6px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+button.recon-fold:hover:not(:disabled) {
+  background: none;
+  color: var(--fg-strong);
+}
+/* Amber, and 1 px down so the chevron sits on the name's text. */
+button.recon-fold svg {
+  position: relative;
+  top: 1px;
+  color: var(--amber-text);
+}
+.recon-table .synced-name {
+  padding-left: 34px;
+  font-weight: 500;
+}
+.recon-table .synced-fix-cell {
+  padding-left: 34px;
+}
+/* The fix block takes the width the other rows give the table; its long text never sizes a column. */
+.synced-fix {
+  contain: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+.synced-fix p {
+  margin: 0;
+}
+.copy-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.copy-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+pre.copy-block {
+  margin: 0;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+  border-radius: 4px;
+  user-select: text;
+  white-space: pre;
+  overflow-x: auto;
+}
+/* Fixed columns: the Unmanaged and Backups tables line up, and a long row text wraps in its own column. */
+table.recon-cols {
+  table-layout: fixed;
+}
+.recon-cols .col-agent {
+  width: 120px;
+}
+.recon-cols .col-name {
+  width: 19%;
+}
+.recon-cols .col-kind {
+  width: 96px;
+}
+.recon-cols .col-act {
+  width: 170px;
+}
+.recon-cols .recon-name {
+  overflow-wrap: anywhere;
+}
+/* The Recon row action: a button at the right edge, in line with the LOADOUT ISSUES buttons, or a note. */
+.recon-table td.recon-act {
+  text-align: right;
+}
+/* The 22 px button takes no more height than a line of row text, so every row is as tall. */
+.recon-act button {
+  margin-block: -2px;
+}
+.recon-act button + button {
+  margin-left: 8px;
+}
+/* A new group of rows (recruit, move to backup, no action) starts under a stronger line. */
+.recon-table tr.group-start > td {
+  border-top: 2px solid var(--card-border);
+}
+.recon-table tbody tr:last-child > td {
+  border-bottom: 0;
+}
+/*
+ * The Recon tips are fixed to their tag, so the table's clipped corners and the scrolling column
+ * never cut one; a tip at the right edge opens leftwards.
+ */
+.recon-table .tip {
+  anchor-name: --recon-tip;
+  anchor-scope: --recon-tip;
+}
+.recon-table .tip-text {
+  position: fixed;
+  position-anchor: --recon-tip;
+  top: anchor(bottom);
+  left: anchor(left);
+  width: max-content;
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.45;
+  position-try-fallbacks: flip-block;
+}
+.recon-table .tip-end .tip-text {
+  left: auto;
+  right: anchor(right);
+}
+/* The result notice after an UNDO: the shape of the failure notice, in the ok colours. */
+.notice.done {
+  color: var(--fg);
+  background: var(--ok-bg);
+  border-color: var(--ok-chip-border);
+}
+.notice.done button.notice-close {
+  color: var(--muted);
+}
+.issue {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--control-border);
+}
+.issue.missing {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+.issue-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.issue-text span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.issue.missing .issue-text span {
+  color: var(--danger);
+}
+button.small.danger {
+  color: var(--danger-strong);
+  border-color: var(--danger-border);
+  background: transparent;
+}
+.recon-side {
+  width: 340px;
+  flex: none;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* Recon's Folders scanned column: narrower, so the Unmanaged NAME column gets the room. */
+.recon-side.narrow {
+  width: 272px;
+}
+.recon-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+.folder-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 4px;
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+}
+.folder-swatch {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  align-self: center;
+  background: var(--ok);
+}
+.folder-swatch.off {
+  background: var(--faint);
+}
+.folder-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+.folder-path,
+.folder-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.field-notes {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+.issue-text .issue-path {
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+/* Skill page (board E2) */
+.skill-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  /* The back row sits where a page header puts its eyebrow. */
+  padding: 16px 28px 24px;
+}
+.skill-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--eyebrow);
+}
+button.back {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+}
+button.back:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
+}
+.skill-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.tile.big {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+.skill-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.skill-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.skill-name h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  /* The chevrons' colour. */
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skill-address {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.skill-source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skill-result {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+/* A saved review score: green from 80, amber from 40 to 79, red below 40 (scoreTone). */
+.score.good {
+  color: var(--ok);
+}
+.score.fair {
+  color: var(--amber-text);
+}
+.score.poor {
+  color: var(--danger);
+}
+.swatch-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+/* On the line of a page header's actions (Recruit skill): the header's 6px eyebrow gap
+   instead of the page's 18px, then centred in the 34px × 1.1 title row. */
+.skill-actions {
+  align-self: flex-start;
+  margin-top: calc(6px - 18px + (34px * 1.1 - var(--control-height)) / 2);
+  display: flex;
+  gap: 8px;
+}
+.skill-notice {
+  margin: 0;
+}
+.skill-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 18px;
+}
+.skill-file {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+.skill-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--inset-border);
+  background: var(--inset);
+}
+button.skill-tab {
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+button.skill-tab[aria-selected='true'] {
+  background: var(--tab-active);
+  color: var(--fg-strong);
+}
+.skill-file-note {
+  padding-right: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+.skill-file-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  user-select: text;
+}
+.frontmatter {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--fg-2);
+  padding: 12px 14px;
+  border-radius: 4px;
+  background: var(--field);
+  border: 1px dashed var(--divider);
+}
+.fm-key {
+  color: var(--accent);
+}
+.review-score b {
+  color: var(--amber-text);
+}
+.fix-top {
+  flex: none;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.fix-note {
+  margin: 0;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--divider);
+}
+.fix-switch {
+  display: inline-flex;
+  gap: 4px;
+}
+.fix-switch button.on,
+.fix-switch button.on:hover:not(:disabled) {
+  color: var(--on-amber);
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.fix-files {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fix-tag {
+  display: inline-block;
+  min-width: 72px;
+  margin-right: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--amber-text);
+}
+.fix-tag.added {
+  color: var(--ok);
+}
+.fix-tag.removed {
+  color: var(--danger-strong);
+}
+.fix-file {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--divider);
+}
+.fix-file-name {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+.fix-text {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  color: var(--fg-2);
+}
+.review-meta {
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.md {
+  color: var(--fg-2);
+  line-height: 1.65;
+  /* break-word, not anywhere: a table column then never shrinks below its longest word. */
+  overflow-wrap: break-word;
+}
+.md h1,
+.md h2,
+.md h3,
+.md h4 {
+  margin: 1.2em 0 0.5em;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+.md h1 {
+  font-size: 20px;
+}
+.md h2 {
+  font-size: 17px;
+}
+.md h3,
+.md h4 {
+  font-size: 15px;
+}
+.md > :first-child {
+  margin-top: 0;
+}
+.md p,
+.md ul,
+.md ol {
+  margin: 0 0 0.9em;
+}
+.md ul,
+.md ol {
+  padding-left: 20px;
+}
+.md a {
+  color: var(--accent);
+}
+.md code {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.md pre {
+  margin: 0 0 0.9em;
+  padding: 12px 14px;
+  border-radius: 4px;
+  background: var(--field);
+  overflow: auto;
+}
+.md :not(pre) > code {
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--inset);
+}
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg-2);
+}
+.history li {
+  display: flex;
+  gap: 14px;
+}
+.history .hash,
+.history .date {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.history .hash {
+  color: var(--hash);
+}
+.history .date {
+  color: var(--faint);
+}
+.skill-side {
+  width: 360px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+}
+.side-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--fg-2);
+}
+.side-card.cut {
+  gap: 10px;
+}
+.side-title {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.side-title b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.issued-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+}
+.issued-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.issued-name {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.spec-row span:first-child {
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+.spec-row span:last-child {
+  text-align: right;
+  color: var(--fg);
+}
+/* A long plugin name truncates beside its label instead of widening the column. */
+section.side-card .spec-row span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The REGISTRY value and its chips share one line, right-aligned like the other values. */
+.spec-row.registry-row {
+  align-items: center;
+}
+.spec-row .registry-value {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.spec-row .registry-value > span:first-child {
+  min-width: 0;
+  letter-spacing: normal;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spec-row .registry-value .recon-tag.warn {
+  letter-spacing: 0.1em;
+  padding-block: 0;
+  line-height: 13px;
+  color: var(--strip-label);
+}
+.spec-row .registry-check {
+  flex: none;
+  /* The 22 px hit area overlaps the row's padding, so the row keeps the height of a text line. */
+  margin: -3.5px 0;
+  margin-left: -10px;
+}
+/* The tip must not be clipped by the rule that truncates the last span of a row. */
+section.side-card .spec-row span.registry-check,
+section.side-card .spec-row span.registry-check .tip-text {
+  overflow: visible;
+}
+.registry-check button.icon {
+  color: var(--src-tessl);
+}
+.registry-check button.icon:hover:not(:disabled) {
+  color: var(--src-tessl);
+  background: var(--inset);
+}
+.amber-text,
+section.side-card .spec-row span.amber-text {
+  color: var(--amber-text);
+}
+/* The CLAUDE.AI card: text lines between the rows; the copy block scrolls instead of widening the column. */
+.side-card.claude-ai {
+  contain: inline-size;
+}
+.side-card.claude-ai p {
+  margin: 0;
+  line-height: 1.5;
+}
+.side-card.claude-ai .copy-head button.small {
+  font-size: 11px;
+}
+.side-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.side-buttons button.small,
+.side-buttons a.button.small {
+  font-size: 11px;
+}
+.file-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.file-mark {
+  color: var(--faint);
+}
+button.decommission {
+  height: 34px;
+  justify-content: center;
+  border: 1px dashed var(--danger-border);
+  background: transparent;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--danger);
+}
+
+/* Intel: strips, update cards, Diff tab and the Intel page (boards E1 to E3) */
+button.amber {
+  background: var(--amber);
+  color: var(--on-amber);
+  border-color: var(--amber);
+}
+button.amber:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--amber) 85%, var(--bg));
+}
+button.amber-outline {
+  background: transparent;
+  color: var(--strip-label);
+  border-color: var(--amber-outline);
+}
+.skill-card.update {
+  background: var(--update-card);
+  border-color: var(--strip-border);
+}
+.skill-card.update:hover {
+  border-color: var(--amber-outline);
+}
+.intel-strip {
+  flex: none;
+  border-radius: 6px;
+  background: var(--strip-bg);
+  border: 1px solid var(--strip-border);
+  overflow: hidden;
+}
+.intel-strip.page-strip {
+  margin: 0 28px 12px;
+}
+/* The label, message, meta and button texts share one baseline, whatever their font sizes. */
+.intel-strip-body {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 8px 14px 10px;
+}
+.intel-strip-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--strip-label);
+}
+.intel-strip-text {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--strip-fg);
+}
+.intel-strip-meta {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--strip-label);
+}
+.intel-strip-meta.tessl-meta {
+  flex: none;
+  white-space: nowrap;
+}
+.check-strip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--danger-strong);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+}
+/* The 13 px sentence sits about 1 px low beside the 10 px mono chip; lift it to the chip's text. */
+.check-strip > span:not(.recon-tag) {
+  position: relative;
+  top: -1px;
+}
+.check-strip.pending {
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--fg-2);
+  background: var(--card);
+  border-color: var(--card-border);
+}
+.tab-count {
+  margin-left: 6px;
+  color: var(--strip-label);
+}
+.diff {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.diff-line {
+  white-space: pre-wrap;
+  color: var(--fg-2);
+}
+.diff-line.add {
+  color: var(--ok);
+}
+.diff-line.del {
+  color: var(--danger);
+}
+.diff-line.hunk {
+  color: var(--muted);
+}
+.diff-summary {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+/* The Diff tab's file blocks keep a gap on the left as wide as the scrollbar track on the right;
+   the text keeps the panel's 24 px inset (23 px plus the block's 1 px border), so it lines up with the summary. */
+.skill-file-body.diff-body {
+  padding-inline: var(--scrollbar) 0;
+}
+.diff-body > p {
+  padding-inline: calc(24px - var(--scrollbar));
+}
+/* One block per file, so the files of a multi-file diff read apart. Not shrunk by the
+   scrolling flex column around it: with overflow hidden, a shrunk block collapses to its border. */
+.diff-file {
+  flex: none;
+  border: 1px solid var(--inset-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  padding-bottom: 4px;
+}
+.diff-file .diff-line {
+  padding: 0 calc(23px - var(--scrollbar));
+}
+.diff-file .diff-line.add {
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
+}
+.diff-file .diff-line.del {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.diff-file-head {
+  padding: 6px calc(23px - var(--scrollbar));
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--inset);
+  border-bottom: 1px solid var(--inset-border);
+  overflow-wrap: anywhere;
+}
+.swatch-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.intel-card {
+  flex: none;
+  border-radius: 6px;
+  background: var(--update-card);
+  border: 1px solid var(--strip-border);
+}
+.intel-card.blocked,
+.intel-card.failed {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+.intel-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+.intel-card-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.intel-card-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.intel-card-skills {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+/* Strip and card buttons share the chip's type size. */
+button.small.amber,
+button.small.amber-outline {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+}
+.head-sep {
+  flex: none;
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--amber-outline);
+}
+.source-name {
+  color: var(--ink);
+}
+.recon-side > .recon-title {
+  align-self: flex-end;
+}
+.recon-side .recon-head {
+  justify-content: flex-end;
+}
+.card-top-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.card-serial {
+  flex: none;
+}
+.card-top-end {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.card-tessl {
+  flex: none;
+  color: var(--src-tessl);
+}
+/* Files newer than the manifest: amber, and the icon pulses until the next publish. */
+.card-tessl.edited {
+  color: var(--amber-text);
+}
+.card-tessl.edited .card-tessl-icon {
+  animation: tessl-pulse 2s ease-in-out infinite;
+}
+@keyframes tessl-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-tessl.edited .card-tessl-icon {
+    animation: none;
+  }
+}
+/* The 18 px marks overhang the 14 px row by 2 px each way, so a card with a mark is as tall as one without. */
+.card-tessl-icon,
+.card-synced-icon {
+  display: inline-flex;
+  margin-block: -2px;
+}
+.card-synced {
+  flex: none;
+  color: var(--synced);
+}
+/* A stowed card dims the icon with its tile; the colour token still tells the two states apart. */
+.skill-card.stowed .card-synced-icon {
+  opacity: 0.6;
+}
+.card-synced.dimmed {
+  color: var(--muted);
+}
+/* On the icon, not the wrapper, so the tip text keeps full opacity. */
+.card-synced.dimmed .card-synced-icon {
+  opacity: 0.55;
+}
+/* The mark sits at the top right of a clipped card, so the tip opens below it, right-aligned and wrapped. */
+.skill-card .card-tessl .tip-text,
+.skill-card .card-synced .tip-text {
+  top: 100%;
+  bottom: auto;
+  left: auto;
+  right: 0;
+  margin: 4px 0 0;
+  width: max-content;
+  max-width: 240px;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+/* The status and the saved review score sit on the serial line, so the card never grows. */
+.card-status,
+button.card-review {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber-text);
+}
+button.card-review {
+  display: block;
+  flex: none;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+button.card-review:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
+}
+.card-status.running {
+  color: color-mix(in srgb, var(--ok) 70%, transparent);
+  animation: status-pulse 1.6s ease-in-out infinite;
+}
+@keyframes status-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-status.running {
+    animation: none;
+  }
+}
+button.small.card-intel {
+  height: 16px;
+  padding: 0 5px;
+  font-size: 9px;
+  border-radius: 3px;
+}
+.intel-chip {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+}
+.intel-card-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 16px 12px 68px;
+  border-top: 1px dashed var(--strip-border);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--strip-fg);
+}
+.intel-card-rows .hash {
+  margin-right: 8px;
+  color: var(--hash);
+}
+.intel-card.blocked .intel-card-rows,
+.intel-card.failed .intel-card-rows {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--danger-strong);
+  border-top-color: var(--danger-border);
+}
+
+/* BOOT CAMP */
+.rail-sep {
+  flex: none;
+  width: 56px;
+  height: 1px;
+  margin: 4px 0;
+  background: var(--rail-border);
+}
+.page-title-row:has(.bc-meter) {
+  justify-content: flex-start;
+  gap: 18px;
+}
+.bc-meter {
+  display: flex;
+  gap: 4px;
+}
+.bc-meter span {
+  width: 26px;
+  height: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--control-border);
+  transform: skewX(-20deg);
+  transition:
+    background 0.3s,
+    border-color 0.3s;
+}
+.bc-meter span.opt {
+  border-style: dashed;
+}
+.bc-meter span.on {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.bc-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  padding: 0 28px 60px;
+}
+.bc-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+.bc-steps {
+  flex: 1;
+  min-width: 0;
+  max-width: 984px;
+}
+/* The rank badge column: the brand's three chevrons, one band per step, filled with desert camouflage (bootcamp/camo.ts) when done. */
+.bc-rank {
+  position: sticky;
+  top: 0;
+  flex: none;
+  width: 250px;
+  display: grid;
+  gap: 14px;
+}
+.bc-rank-box {
+  box-sizing: border-box;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 20px 16px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+}
+.bc-rank-label {
+  justify-self: start;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.bc-badge {
+  display: block;
+  width: 160px;
+  height: auto;
+  margin-bottom: 20px;
+}
+.bc-badge .band {
+  fill: transparent;
+  stroke: var(--control-border);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transition:
+    fill 0.3s,
+    stroke 0.3s;
+}
+.bc-badge .band.opt {
+  stroke-dasharray: 4 3;
+}
+.bc-badge .band.on {
+  fill: var(--camo);
+  stroke: var(--rank-outline);
+  stroke-dasharray: none;
+}
+.bc-rank-word {
+  font-family: var(--stencil);
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--ink);
+}
+.bc-rank-word.ok {
+  color: var(--ok);
+}
+.bc-rank-plus {
+  margin-top: -8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ok);
+}
+.bc-rank-count {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+/* A grid, not a wrapping flex column: in a column the row's flex-basis wraps it outside the box. */
+.bc-rank .bc-exit {
+  display: grid;
+  justify-items: start;
+  margin-top: 0;
+}
+.bc-rank .bc-exit > p {
+  min-width: 0;
+}
+.bc-lead {
+  margin: 8px 0 18px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.bc-step {
+  box-sizing: border-box;
+  display: grid;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 16px 20px 18px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+}
+.bc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.bc-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+.bc-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--stencil);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.bc-chip {
+  padding: 3px 7px;
+  border: 1px solid var(--control-border);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.bc-chip.ok {
+  color: var(--ok);
+  border-color: var(--ok-chip-border);
+}
+.bc-chip.todo {
+  color: var(--strip-label);
+  border-color: var(--strip-border);
+  background: var(--strip-bg);
+}
+.bc-chip.dashed {
+  border-style: dashed;
+}
+/* 6 px under the head and 14 px above the body, in the step's 10 px grid. */
+.bc-purpose {
+  margin: -4px 0 4px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+/* Reduce motion: nothing on BOOT CAMP transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .bc-meter span,
+  .bc-scroll *,
+  .bc-scroll *::before,
+  .bc-scroll *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.bc-status {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.bc-status strong {
+  font-weight: 600;
+}
+.bc-dot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  transform: translateY(1px);
+}
+.bc-status.ok .bc-dot {
+  background: var(--ok);
+}
+.bc-status.bad .bc-dot {
+  background: var(--danger);
+}
+.bc-status.wait .bc-dot {
+  background: var(--amber);
+}
+.bc-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.bc-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.bc-row button {
+  height: 30px;
+}
+.bc-install {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+  border-radius: 4px;
+}
+.bc-install-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.bc-alt {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+.bc-cmd {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--control-border);
+  border-radius: 4px;
+  background: var(--field);
+}
+.bc-cmd pre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 10px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg);
+  user-select: text;
+}
+.bc-cmd .l::before {
+  content: '$ ';
+  color: var(--faint);
+}
+.bc-cmd .l + .l::before {
+  content: '\A$ ';
+  white-space: pre;
+}
+.bc-cmd button.bc-copy {
+  height: auto;
+  min-height: 24px;
+  border: 0;
+  border-left: 1px solid var(--control-border);
+  border-radius: 0 3px 3px 0;
+  font-size: 11px;
+}
+.bc-agents {
+  display: grid;
+  gap: 10px;
+}
+.bc-agent {
+  box-sizing: border-box;
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--inset);
+  border: 1px solid var(--inset-border);
+  border-radius: 4px;
+}
+.bc-agent-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.bc-agent-name {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bc-agent-name strong {
+  font-size: 15px;
+}
+.bc-agent-name .mono {
+  color: var(--faint);
+  overflow-wrap: anywhere;
+}
+/* Fixed width, switch at the right: the switch does not move between ENLIST and ENLISTED. */
+.switch-label {
+  box-sizing: border-box;
+  width: 112px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.bc-line {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+button.link {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--toggle-on);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+button.link:hover:not(:disabled) {
+  background: transparent;
+  color: var(--fg-strong);
+  text-decoration-thickness: 2px;
+}
+.bc-exit {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--ok-chip-border);
+  border-radius: 4px;
+  background: var(--ok-bg);
+}
+.bc-exit > strong {
+  font-family: var(--stencil);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--ok);
+}
+.bc-exit > p {
+  flex: 1;
+  min-width: 240px;
+  max-width: 70ch;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.bc-exit > p strong {
+  font-weight: 600;
+}
+.bc-exit > .bc-row {
+  flex-basis: 100%;
+}
+
+/* The Briefing: five cards over the dimmed page. */
+/* The dialog covers the window (dialog.cover): it dims and blurs the page itself, so the dim can
+   ease out. The card is the visible box. */
+dialog.briefing {
+  background: rgb(0 0 0 / 0.62);
+  backdrop-filter: blur(6px);
+}
+/* Leaving: the card goes first, and the dim and the blur ease out over the page (LEAVE_MS). */
+dialog.briefing {
+  transition:
+    background-color 0.68s ease,
+    backdrop-filter 0.68s ease;
+}
+dialog.briefing.closing {
+  background-color: transparent;
+  backdrop-filter: blur(0);
+}
+.brief-card {
+  transition:
+    opacity 0.33s ease,
+    transform 0.33s ease;
+}
+dialog.briefing.closing .brief-card {
+  opacity: 0;
+  transform: translateY(6px) scale(0.985);
+}
+dialog.briefing::backdrop {
+  background: transparent;
+}
+.brief-card {
+  -webkit-app-region: no-drag;
+  box-sizing: border-box;
+  width: 980px;
+  max-width: calc(100vw - 48px);
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, 0 100%);
+}
+.brief-stage {
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+  padding: 26px 32px 24px;
+}
+.brief-copy {
+  flex: 0 0 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+}
+dialog.briefing .title {
+  font-size: 38px;
+  line-height: 1.05;
+}
+.brief-lead {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg);
+  text-wrap: balance;
+}
+.brief-body {
+  color: var(--fg-2);
+  font-size: 15px;
+}
+.brief-where {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--divider);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.brief-where span:first-child {
+  color: var(--faint);
+}
+.brief-where span:last-child {
+  color: var(--amber-text);
+}
+.brief-map {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+/* The live tablet: one map that pans and zooms under a fixed frame image. The screen keeps its
+   own dark colours in both appearances. Numbers come from design/briefing/mockup.html. */
+.brief-pad {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1280 / 720;
+  filter: drop-shadow(0 14px 16px rgb(0 0 0 / 0.4));
+  --scr-bg: #13160f;
+  --scr-ink: #e8dfc4;
+  --scr-ok: #8fd19c;
+  --scr-dust: rgb(205 182 135 / 0.6);
+  --scr-rotor: rgb(12 15 10 / 0.62);
+}
+.brief-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+}
+.brief-view {
+  position: absolute;
+  left: 11.172%;
+  top: 15.833%;
+  width: 77.578%;
+  height: 69.028%;
+  overflow: hidden;
+  border-radius: 1.1% / 2.2%;
+  background: var(--scr-bg);
+}
+.brief-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 993px;
+  height: 497px;
+  transform-origin: 0 0;
+  transition: transform 1.6s cubic-bezier(0.65, 0, 0.25, 1);
+  will-change: transform;
+}
+.brief-mapimg {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 1001px;
+  height: 505px;
+  max-width: none;
+}
+.brief-ov {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 993px;
+  height: 497px;
+  overflow: visible;
+}
+/* A layer comes in after most of the pan and leaves fast. */
+.brief-world [data-layer] {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.brief-world [data-layer].on {
+  opacity: 1;
+  transition: opacity 0.7s ease 1s;
+}
+.brief-arrow {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 12 9;
+  animation: brief-march 0.9s linear infinite;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.55));
+}
+.brief-arrow.dot {
+  stroke-dasharray: 2 10;
+}
+.brief-ahp {
+  fill: var(--amber);
+}
+@keyframes brief-march {
+  to {
+    stroke-dashoffset: -21;
+  }
+}
+.brief-bracket {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 4;
+  stroke-linecap: square;
+}
+.brief-ring {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: brief-ping 2.4s ease-out infinite;
+}
+.brief-ring.d1 {
+  animation-delay: 0.8s;
+}
+.brief-ring.d2 {
+  animation-delay: 1.6s;
+}
+@keyframes brief-ping {
+  0% {
+    transform: scale(0.25);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.brief-pulse {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 3;
+  animation: brief-pulse 1.6s ease-in-out infinite;
+}
+@keyframes brief-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.brief-plate {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font: 800 15px/1 var(--sans);
+  letter-spacing: 0.05em;
+  color: var(--scr-ink);
+  background: var(--scr-bg);
+  border: 2.5px solid var(--amber);
+  border-radius: 6px;
+  padding: 5px 9px;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.45);
+}
+.brief-lay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 993px;
+  height: 497px;
+  pointer-events: none;
+}
+.brief-spr {
+  position: absolute;
+  left: 0;
+  top: 0;
+  offset-rotate: 0deg;
+}
+.brief-spr img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+/* The trucks and the helicopter rest hidden; their loops start when their card opens. */
+.brief-truck {
+  width: 76px;
+  opacity: 0;
+}
+.brief-truck.t1 {
+  offset-path: path('M665 148 C720 140 790 110 842 84');
+}
+.brief-truck.t2 {
+  offset-path: path('M672 226 C730 222 800 200 850 183');
+}
+.brief-lay.on .brief-truck.t1 {
+  animation: brief-drive 6s ease-in-out 1.2s infinite both;
+}
+.brief-lay.on .brief-truck.t2 {
+  animation: brief-drive 6s ease-in-out 3.4s infinite both;
+}
+@keyframes brief-drive {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    offset-distance: 66%;
+    opacity: 1;
+  }
+  90% {
+    offset-distance: 66%;
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 66%;
+    opacity: 0;
+  }
+}
+.brief-dust {
+  position: absolute;
+  left: -14%;
+  bottom: 2%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--scr-dust), transparent 70%);
+  animation: brief-puff 0.8s ease-out infinite;
+}
+.brief-dust.b {
+  left: -30%;
+  bottom: 10%;
+  animation-delay: 0.4s;
+}
+@keyframes brief-puff {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.7) translateX(-20%);
+    opacity: 0;
+  }
+}
+.brief-heli {
+  width: 112px;
+  offset-path: path('M325 232 C280 236 230 244 195 250');
+  opacity: 0;
+}
+.brief-lay.on .brief-heli {
+  animation: brief-fly 8s ease-in-out 1.2s infinite both;
+}
+@keyframes brief-fly {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+  92%,
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.brief-rotor {
+  position: absolute;
+  left: -15%;
+  top: -42.5%;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 0 62%, rgb(12 15 10 / 0.1) 63% 70%, transparent 71%),
+    conic-gradient(
+      var(--scr-rotor) 0 7%,
+      transparent 7% 25%,
+      var(--scr-rotor) 25% 32%,
+      transparent 32% 50%,
+      var(--scr-rotor) 50% 57%,
+      transparent 57% 75%,
+      var(--scr-rotor) 75% 82%,
+      transparent 82%
+    );
+  animation: brief-rotor 0.22s linear infinite;
+}
+.brief-rotor.tail {
+  left: 85%;
+  top: 4.5%;
+  width: 22%;
+  animation-name: brief-rotor-tail;
+}
+@keyframes brief-rotor {
+  from {
+    transform: scaleY(0.3) rotate(0deg);
+  }
+  to {
+    transform: scaleY(0.3) rotate(360deg);
+  }
+}
+@keyframes brief-rotor-tail {
+  from {
+    transform: scaleX(0.35) rotate(0deg);
+  }
+  to {
+    transform: scaleX(0.35) rotate(360deg);
+  }
+}
+.brief-drone {
+  width: 88px;
+  left: 778px;
+  top: 328px;
+  animation: brief-bob 2.6s ease-in-out infinite;
+}
+@keyframes brief-bob {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+.brief-cone {
+  position: absolute;
+  left: 22%;
+  top: 62%;
+  width: 56%;
+  height: 95%;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--amber) 60%, transparent),
+    transparent
+  );
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  animation: brief-pulse 1.6s ease-in-out infinite;
+}
+.brief-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 62%, rgb(0 0 0 / 0.28) 100%);
+}
+.brief-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30%;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--scr-ok) 26%, transparent),
+    transparent
+  );
+}
+/* The screen stays dark until the power-up starts. */
+.brief-view:not(.boot) .brief-world {
+  opacity: 0;
+}
+/* Hidden, not only transparent, after the power-up, so the filter costs nothing. */
+.brief-noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+.brief-view.boot .brief-noise {
+  animation: brief-noise 1.4s linear both;
+}
+.brief-view.boot .brief-world {
+  animation: brief-flick 1.7s steps(1, end) both;
+}
+.brief-view.boot .brief-sweep {
+  animation: brief-sweep 1.7s ease-out both;
+}
+@keyframes brief-noise {
+  0% {
+    opacity: 0.85;
+    visibility: visible;
+  }
+  35% {
+    opacity: 0.6;
+  }
+  55% {
+    opacity: 0.3;
+  }
+  70% {
+    opacity: 0.4;
+  }
+  99% {
+    opacity: 0;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes brief-flick {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.7;
+  }
+  22% {
+    opacity: 0;
+  }
+  34% {
+    opacity: 0.4;
+  }
+  38% {
+    opacity: 0.05;
+  }
+  52% {
+    opacity: 0.9;
+  }
+  56% {
+    opacity: 0.3;
+  }
+  64%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes brief-sweep {
+  0% {
+    opacity: 1;
+    transform: translateY(-100%);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(340%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brief-world {
+    transition: none;
+  }
+  .brief-arrow,
+  .brief-ring,
+  .brief-pulse,
+  .brief-lay.on .brief-truck.t1,
+  .brief-lay.on .brief-truck.t2,
+  .brief-dust,
+  .brief-lay.on .brief-heli,
+  .brief-rotor,
+  .brief-drone,
+  .brief-cone,
+  .brief-view.boot .brief-world,
+  .brief-view.boot .brief-sweep,
+  .brief-view.boot .brief-noise {
+    animation: none;
+  }
+  .brief-truck.t1,
+  .brief-truck.t2 {
+    offset-distance: 66%;
+    opacity: 1;
+  }
+  .brief-heli {
+    offset-distance: 50%;
+    opacity: 1;
+  }
+}
+.brief-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 32px 20px;
+  border-top: 1px solid var(--divider);
+}
+.brief-pips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.brief-pips button {
+  all: unset;
+  display: block;
+  padding: 4px 2px;
+  border-radius: 3px;
+}
+.brief-pips button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+.brief-pips svg {
+  display: block;
+  width: 22px;
+  height: 12px;
+}
+.brief-pips path {
+  fill: var(--divider);
+  transition: fill 0.2s;
+}
+.brief-pips .done path {
+  fill: var(--ink);
+}
+.brief-pips .cur path {
+  fill: var(--amber);
+}
+.brief-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+.brief-btns {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+button.brief-skip {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
