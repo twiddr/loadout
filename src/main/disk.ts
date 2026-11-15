@@ -245,6 +245,36 @@ export async function togglePack(
   }
 }
 
+/** Deploys each just-added skill to each agent, one snapshot; a refused skill does not stop the others. */
+export async function deployAdded(
+  names: string[],
+  agentIds: string[],
+  config: Config,
+  paths: Paths
+): Promise<PackRefusal[]> {
+  if (agentIds.length === 0) return []
+  const snap = await snapshot(config, paths)
+  const refused: PackRefusal[] = []
+  for (const name of names) {
+    for (const agentId of agentIds) {
+      try {
+        const plan = planToggle(
+          { skill: name, agentId, on: true },
+          config.agents,
+          snap.entries,
+          snap.folders,
+          paths
+        )
+        if (!plan.ok) refused.push({ skill: name, message: plan.message })
+        else await applyOps(plan.ops)
+      } catch (error) {
+        refused.push({ skill: name, message: failure(error).message })
+      }
+    }
+  }
+  return refused
+}
+
 /** removeEntry for each member of a pack; a refused member does not stop the others. unusedClone is the last non-null one. */
 export async function removePack(
   pack: string,

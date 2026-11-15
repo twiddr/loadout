@@ -15,6 +15,8 @@
 
   let addDialog = $state<HTMLDialogElement>()
   let registryDialog = $state<HTMLDialogElement>()
+  let linkAdd = $state<AddDialog>()
+  let registryAdd = $state<AddDialog>()
 
   const issued = $derived(lib.entries.filter((e) => e.enabledFor.length > 0).length)
   const shown = $derived(
@@ -26,6 +28,17 @@
   )
   // The key is `github:<owner>/<repo>` or `tessl:<workspace>/<plugin>`, so it names the pack with one member left too.
   const sourceName = $derived(app.pack?.slice(app.pack.indexOf(':') + 1) ?? '')
+  const fromRegistry = $derived(app.pack?.startsWith('tessl:') ?? false)
+  /** Why the open pack cannot recruit more, or null when it can. */
+  const recruitBlock = $derived(
+    fromRegistry
+      ? lib.startup.tools.tessl === null
+        ? 'tessl not found'
+        : null
+      : lib.startup.tools.git === null
+        ? 'git not found'
+        : null
+  )
   const membersOn = $derived(members.filter((e) => e.enabledFor.length > 0).length)
   const count = (filter: Filter): number =>
     (app.pack === null ? lib.entries : members).filter((e) => matches(e, lib.home, '', filter))
@@ -86,6 +99,18 @@
   >
   <span class="sep">/</span>
   <span class="pack-name">{sourceName}</span>
+  <span class="tip">
+    <button
+      class="back recruit-more"
+      aria-label={`Recruit more from ${sourceName}`}
+      disabled={busy || recruitBlock !== null}
+      onclick={() => (fromRegistry ? registryAdd : linkAdd)?.scanSource(sourceName)}
+      ><Icon name="square-plus" size={15} /></button
+    >
+    <span class="tip-text float" role="tooltip"
+      >{recruitBlock ?? `Recruit more from ${sourceName}`}</span
+    >
+  </span>
   <span class="sep">·</span>
   <span>{members.length} {plural(members.length, 'SKILL', 'SKILLS')}</span>
   <span class="sep">·</span>
@@ -152,16 +177,28 @@
     </button>
   {/each}
   <div class="view-switch">
-    <button
-      class="filter-chip"
-      aria-pressed={lib.loadoutView === 'skills'}
-      onclick={() => setView('skills')}>SKILLS</button
-    >
-    <button
-      class="filter-chip"
-      aria-pressed={lib.loadoutView === 'packs'}
-      onclick={() => setView('packs')}>PACKS</button
-    >
+    <span class="tip">
+      <button
+        class="filter-chip"
+        aria-pressed={lib.loadoutView === 'skills'}
+        aria-describedby="view-tip-skills"
+        onclick={() => setView('skills')}>SKILLS</button
+      >
+      <span class="tip-text float" id="view-tip-skills" role="tooltip"
+        >Show every skill as its own card</span
+      >
+    </span>
+    <span class="tip">
+      <button
+        class="filter-chip"
+        aria-pressed={lib.loadoutView === 'packs'}
+        aria-describedby="view-tip-packs"
+        onclick={() => setView('packs')}>PACKS</button
+      >
+      <span class="tip-text float" id="view-tip-packs" role="tooltip"
+        >Group the skills from one Link or Registry source into one pack card</span
+      >
+    </span>
   </div>
 </div>
 
@@ -195,5 +232,5 @@
   {/if}
 </div>
 
-<AddDialog kind="github" {busy} bind:dialog={addDialog} />
-<AddDialog kind="tessl" {busy} bind:dialog={registryDialog} />
+<AddDialog kind="github" {busy} bind:dialog={addDialog} bind:this={linkAdd} />
+<AddDialog kind="tessl" {busy} bind:dialog={registryDialog} bind:this={registryAdd} />

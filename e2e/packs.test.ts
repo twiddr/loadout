@@ -210,6 +210,37 @@ test('packs: an opened pack lists its members, and Back to packs returns to the 
   }
 })
 
+test('packs: the recruit icon of an opened pack scans its link', async () => {
+  const { home, env } = packHome()
+  const extra = join(home, '.loadout', 'repos', 'acme', 'tools', 'skills', 'new-one')
+  mkdirSync(extra, { recursive: true })
+  writeFileSync(join(extra, 'SKILL.md'), '---\nname: new-one\ndescription: A probe.\n---\n')
+  try {
+    await withApp(home, env, async (page) => {
+      await toPacks(page)
+      await openPack(page)
+      const recruit = page.getByRole('button', { name: 'Recruit more from acme/tools' })
+      await recruit.hover()
+      await expect(
+        page.locator('.page-line [role="tooltip"]', { hasText: 'Recruit more from acme/tools' })
+      ).toBeVisible()
+      await recruit.click()
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByLabel('GitHub link')).toHaveValue('acme/tools')
+      const fresh = dialog.getByRole('checkbox', { name: 'Add skills/new-one' })
+      await expect(fresh).toBeEnabled()
+      await expect(fresh).not.toBeChecked()
+      for (const name of MEMBERS) {
+        const owned = dialog.getByRole('checkbox', { name: `Add skills/${name}`, exact: true })
+        await expect(owned).toBeChecked()
+        await expect(owned).toBeDisabled()
+      }
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('packs: a search or a filter shows skill cards, not pack cards', async () => {
   const { home, env } = packHome()
   try {
@@ -374,15 +405,36 @@ test('packs: a pack card shows STOWED, a MISSING chip and ↑ INTEL after a chec
   }
 })
 
-test('packs: SKILLS closes an open pack, and Back there skips the pack step', async () => {
+test('packs: the rail LOADOUT closes an open pack; the mouse back button opens it again', async () => {
   const { home, env } = packHome()
   try {
     await withApp(home, env, async (page) => {
       await toPacks(page)
       await openPack(page)
+      await page.getByRole('link', { name: 'Loadout' }).click()
+      await expect(page.getByRole('button', { name: 'Back to packs' })).toHaveCount(0)
+      await expect(packCard(page)).toBeVisible()
+      await pressBack(page)
+      await expect(page.getByRole('button', { name: 'Back to packs' })).toBeVisible()
+
       await page.getByRole('link', { name: 'Intel' }).click()
       await page.getByRole('link', { name: 'Loadout' }).click()
-      await expect(page.getByRole('button', { name: 'Back to packs' })).toBeVisible()
+      await expect(packCard(page)).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Back to packs' })).toHaveCount(0)
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('packs: SKILLS closes an open pack, and Back there skips the pack step', async () => {
+  const { home, env } = packHome()
+  try {
+    await withApp(home, env, async (page) => {
+      await toPacks(page)
+      await page.getByRole('link', { name: 'Intel' }).click()
+      await page.getByRole('link', { name: 'Loadout' }).click()
+      await openPack(page)
 
       await viewButton(page, 'SKILLS').click()
       await expect(page.getByRole('button', { name: 'Back to packs' })).toHaveCount(0)

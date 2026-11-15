@@ -1725,6 +1725,87 @@ test('recruit: the header checkbox ticks and clears every skill it can add', asy
   }
 })
 
+test('recruit: a skill already recruited from the same link shows ticked', async () => {
+  const { home, env } = fakeHome()
+  // `owned` comes from acme/many; `probe` is a local skill with the same name as one in the clone.
+  addSkill(home, '.loadout/repos', 'acme/many/skills/owned', 'owned')
+  for (const name of ['new-a', 'probe']) {
+    const folder = join(home, '.loadout', 'repos', 'acme', 'many', 'skills', name)
+    mkdirSync(folder, { recursive: true })
+    writeFileSync(join(folder, 'SKILL.md'), `---\nname: ${name}\ndescription: A probe.\n---\n`)
+  }
+  const app = await _electron.launch({
+    args: launchArgs(home),
+    env: { ...process.env, ...env } as Record<string, string>
+  })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.locator('.rail-status', { hasText: /^READY$/ })).toBeVisible()
+    await page.getByRole('button', { name: 'Recruit skill' }).click()
+    await page.getByRole('button', { name: 'Add from link' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('GitHub link').fill('acme/many')
+    await dialog.getByRole('button', { name: 'Scan' }).click()
+    const owned = dialog.getByRole('checkbox', { name: 'Add skills/owned' })
+    const probe = dialog.getByRole('checkbox', { name: 'Add skills/probe' })
+    await expect(owned).toBeChecked()
+    await expect(owned).toBeDisabled()
+    await expect(probe).not.toBeChecked()
+    await expect(probe).toBeDisabled()
+    await expect(dialog.getByRole('checkbox', { name: 'Add all skills' })).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Add' })).toBeDisabled()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('recruit: the agent boxes deploy the added skills', async () => {
+  const { home, env } = fakeHome()
+  const config = structuredClone(DEFAULT_CONFIG)
+  config.agents[0].enabled = true
+  config.agents[1].enabled = true
+  writeFileSync(join(home, '.loadout', 'config.json'), serializeConfig(config))
+  for (const name of ['new-a', 'new-b']) {
+    const folder = join(home, '.loadout', 'repos', 'acme', 'many', 'skills', name)
+    mkdirSync(folder, { recursive: true })
+    writeFileSync(join(folder, 'SKILL.md'), `---\nname: ${name}\ndescription: A probe.\n---\n`)
+  }
+  const app = await _electron.launch({
+    args: launchArgs(home),
+    env: { ...process.env, ...env } as Record<string, string>
+  })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.locator('.rail-status', { hasText: /^READY$/ })).toBeVisible()
+    await page.getByRole('button', { name: 'Recruit skill' }).click()
+    await page.getByRole('button', { name: 'Add from link' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('GitHub link').fill('acme/many')
+    await dialog.getByRole('button', { name: 'Scan' }).click()
+    await dialog.getByRole('checkbox', { name: 'Add skills/new-a' }).check()
+    const cc = dialog.getByRole('checkbox', { name: 'Deploy to Claude Code' })
+    await expect(cc).not.toBeChecked()
+    await expect(dialog.getByRole('checkbox', { name: 'Deploy to Codex' })).not.toBeChecked()
+    await cc.check()
+    await dialog.getByRole('button', { name: 'Add' }).click()
+    await expect(dialog).toBeHidden()
+    await expect.poll(() => existsSync(join(home, '.claude', 'skills', 'new-a'))).toBe(true)
+    expect(existsSync(join(home, '.codex', 'skills', 'new-a'))).toBe(false)
+    expect(existsSync(join(home, '.claude', 'skills', 'new-b'))).toBe(false)
+
+    // The boxes start clear at the next open.
+    await page.getByRole('button', { name: 'Recruit skill' }).click()
+    await page.getByRole('button', { name: 'Add from link' }).click()
+    await dialog.getByLabel('GitHub link').fill('acme/many')
+    await dialog.getByRole('button', { name: 'Scan' }).click()
+    await expect(dialog.getByRole('checkbox', { name: 'Deploy to Claude Code' })).not.toBeChecked()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test("recruit: the Registry dialog lists a workspace's plugins", async () => {
   const { home, env } = fakeHome()
   // `kit` is in the library, so its row says so; `beta/other` is on disk, so the row click's Scan reads it.

@@ -9,6 +9,9 @@ files:
   - package.json
 asar: true
 npmRebuild: false
+# No electron-builder publish: Loadout updates itself with curl. Without this, a git remote
+# that electron-builder cannot parse (the public clone's SSH alias host) crashes the dmg step.
+publish: null
 mac:
   icon: design/icon.icns
   target:

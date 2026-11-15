@@ -124,13 +124,14 @@ import {
 import {
   addLocal,
   applyOps,
+  deployAdded,
   ensureLoadout,
   linkCandidates,
   listLinks,
   relocateEntry,
   removeEntry,
-  removePack,
   removeInstallLinks,
+  removePack,
   snapshot,
   togglePack
 } from './disk'
@@ -1011,21 +1012,26 @@ function registerHandlers(): void {
     if (candidates.length === 0) {
       return { ok: false, message: `No SKILL.md found in ${parsed.owner}/${parsed.repo}.` }
     }
-    return { ok: true, root, candidates }
+    const key = sourceKey({ type: 'github', owner: parsed.owner, repo: parsed.repo, subpath: '' })
+    return { ok: true, root, key, candidates }
   })
 
-  handle('add-candidates', async ({ root, names }: { root: string; names: string[] }) => {
-    const linked = await linkCandidates(root, names, paths)
-    if (!linked.ok) return linked
-    const lint: Record<string, Lint> = {}
-    for (const { name, folder } of linked.added) {
-      const linted = await lintAdded(folder, 'add', null)
-      if (!linted.ok) return linted
-      lint[name] = linted.lint
+  handle(
+    'add-candidates',
+    async ({ root, names, agents }: { root: string; names: string[]; agents: string[] }) => {
+      const linked = await linkCandidates(root, names, paths)
+      if (!linked.ok) return linked
+      const lint: Record<string, Lint> = {}
+      for (const { name, folder } of linked.added) {
+        const linted = await lintAdded(folder, 'add', null)
+        if (!linted.ok) return linted
+        lint[name] = linted.lint
+      }
+      const refused = await deployAdded(names, agents, config, paths)
+      await pushState()
+      return { ok: true, added: names, lint, refused }
     }
-    await pushState()
-    return { ok: true, added: names, lint }
-  })
+  )
 
   handle('update', async ({ skill }: { skill: string }) => {
     const { entries } = await snapshot(config, paths)
@@ -1050,7 +1056,13 @@ function registerHandlers(): void {
     if (candidates.length === 0) {
       return { ok: false, message: `No SKILL.md found in ${ref.workspace}/${ref.plugin}.` }
     }
-    return { ok: true, root, candidates }
+    const key = sourceKey({
+      type: 'tessl',
+      workspace: ref.workspace,
+      plugin: ref.plugin,
+      subpath: ''
+    })
+    return { ok: true, root, key, candidates }
   })
 
   handle('review', async ({ skill }: { skill: string }) => {

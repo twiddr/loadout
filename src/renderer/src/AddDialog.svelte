@@ -2,7 +2,7 @@
   import { sourceKey } from '../../core/checks'
   import type { Candidate, RegistryPlugin, Workspace } from '../../core/ipc'
   import { api } from './api'
-  import { addedText } from './format'
+  import { addedText, agentCode } from './format'
   import Icon from './Icon.svelte'
   import { app, report } from './state.svelte'
 
@@ -15,9 +15,14 @@
   let repo = $state('')
   let message = $state<string | null>(null)
   let root = $state('')
+  /** The source key of the scanned link or plugin. */
+  let scanned = $state<string | null>(null)
   let candidates = $state<Candidate[] | null>(null)
   let ticked = $state<Record<string, boolean>>({})
   let adding = $state(false)
+  /** The agents ticked in the footer; Add deploys the added skills to them. */
+  let deployTo = $state<Record<string, boolean>>({})
+  const agents = $derived((app.state?.agents ?? []).filter((a) => a.enabled))
   const id = $props.id()
 
   // The Registry browse (kind 'tessl'): the memberships, the shown workspace and its plugins.
@@ -32,6 +37,14 @@
     new Set((app.state?.entries ?? []).map((entry) => sourceKey(entry.source)))
   )
   const shown = $derived(plugins.filter((p) => p.hasSkills))
+  /** Library skills recruited from the scanned source: their rows show ticked. */
+  const owned = $derived(
+    new Set(
+      (app.state?.entries ?? [])
+        .filter((entry) => scanned !== null && sourceKey(entry.source) === scanned)
+        .map((entry) => entry.name)
+    )
+  )
 
   async function loadWorkspaces(): Promise<void> {
     const load = ++listId
@@ -107,6 +120,7 @@
       return
     }
     root = result.root
+    scanned = result.key
     candidates = result.candidates
     ticked = {}
   }
@@ -114,23 +128,38 @@
   async function add(): Promise<void> {
     adding = true
     try {
-      const result = await api.invoke('add-candidates', { root, names })
+      const result = await api.invoke('add-candidates', {
+        root,
+        names,
+        agents: agents.filter((a) => deployTo[a.id] === true).map((a) => a.id)
+      })
       if (!result.ok) {
         message = result.message ?? 'The action failed.'
         return
       }
       report(result)
       for (const name of result.added) app.rowResult[name] = addedText(result.lint[name] ?? 'ok')
+      if (result.refused.length > 0) {
+        app.notice = `Added, but not deployed: ${result.refused.map((r) => `${r.skill}: ${r.message}`).join('; ')}`
+      }
       dialog?.close()
     } finally {
       adding = false
     }
   }
 
+  /** Opens the dialog on `value` (a link or a plugin) and scans it at once. */
+  export function scanSource(value: string): void {
+    repo = value
+    dialog?.showModal()
+    void scan()
+  }
+
   /** Drops the results and any running scan, so Add never uses a scan of other input. */
   function forget(): void {
     scanId++
     message = null
+    scanned = null
     candidates = null
     ticked = {}
   }
@@ -138,6 +167,7 @@
   function reset(): void {
     forget()
     repo = ''
+    deployTo = {}
     listId++
     workspaces = []
     workspace = null
@@ -147,7 +177,7 @@
 </script>
 
 <dialog
-  class="cover"
+  class="cover scan"
   bind:this={dialog}
   onclose={reset}
   ontoggle={(e) => {
@@ -282,15 +312,19 @@
                     type="checkbox"
                     aria-label={`Add ${candidate.subpath || '.'}`}
                     disabled={candidate.disabled !== null || candidate.name === null}
-                    checked={candidate.disabled === null &&
-                      candidate.name !== null &&
-                      ticked[candidate.name] === true}
+                    checked={candidate.name !== null &&
+                      (owned.has(candidate.name) ||
+                        (candidate.disabled === null && ticked[candidate.name] === true))}
                     onchange={(e) => {
                       if (candidate.name !== null) ticked[candidate.name] = e.currentTarget.checked
                     }}
                   />
                 </td>
-                <td class="mono">{candidate.subpath || '.'}</td>
+                <td
+                  class="mono"
+                  class:muted={candidate.disabled !== null || candidate.name === null}
+                  >{candidate.subpath || '.'}</td
+                >
                 <td>{candidate.name ?? ''}</td>
                 <td class="muted">{candidate.disabled ?? ''}</td>
               </tr>
@@ -300,6 +334,21 @@
       </div>
     {/if}
     <div class="actions">
+      {#if candidates && agents.length > 0}
+        <div class="deploy-to">
+          <span class="muted">Deploy to</span>
+          {#each agents as agent (agent.id)}
+            <label class="toggle">
+              <input
+                type="checkbox"
+                aria-label={`Deploy to ${agent.label}`}
+                bind:checked={deployTo[agent.id]}
+              />
+              <span>{agentCode(agent)}</span>
+            </label>
+          {/each}
+        </div>
+      {/if}
       {#if busy}
         <button onclick={() => api.invoke('cancel')}>Cancel</button>
       {/if}

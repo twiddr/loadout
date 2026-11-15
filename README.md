@@ -15,7 +15,7 @@ Loadout reads your shell's `PATH` and also looks in `~/.local/bin`, `/opt/homebr
 
 ## Install
 
-Download page: <https://twiddr.github.io/loadout/>
+Download page: <https://theloadout.dev/>
 
 **The app is not notarised.** It is ad-hoc signed, not signed with an Apple Developer ID, and Apple has not notarised it. macOS blocks the first launch of a copy downloaded in a browser. A download with `curl` gets no quarantine flag, so macOS skips the Gatekeeper check for it: no notarisation check, no Developer ID check and no first-launch prompt. You trust this repository and GitHub's HTTPS, nothing more. To check a download, compare `shasum -a 256 ~/Downloads/Loadout.dmg` with the SHA-256 in the notes of the [release](https://github.com/twiddr/loadout/releases/latest); the download page shows it too.
 

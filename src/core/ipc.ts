@@ -280,16 +280,16 @@ export interface LoadoutApi {
   invoke(
     channel: 'scan-github',
     payload: { repo: string }
-  ): Promise<Result<{ root: string; candidates: Candidate[] }>>
+  ): Promise<Result<{ root: string; key: string | null; candidates: Candidate[] }>>
   invoke(
     channel: 'add-candidates',
-    payload: { root: string; names: string[] }
-  ): Promise<Result<{ added: string[]; lint: Record<string, Lint> }>>
+    payload: { root: string; names: string[]; agents: string[] }
+  ): Promise<Result<{ added: string[]; lint: Record<string, Lint>; refused: PackRefusal[] }>>
   invoke(channel: 'update', payload: { skill: string }): Promise<Result<{ updated: string[] }>>
   invoke(
     channel: 'scan-tessl',
     payload: { plugin: string }
-  ): Promise<Result<{ root: string; candidates: Candidate[] }>>
+  ): Promise<Result<{ root: string; key: string | null; candidates: Candidate[] }>>
   invoke(
     channel: 'review',
     payload: { skill: string }

@@ -53,6 +53,8 @@
       onclick={(e) => {
         e.preventDefault()
         app.page = { name: tab.name }
+        // LOADOUT always lands on the SKILLS / PACKS page; the mouse back button still reopens the pack.
+        if (tab.name === 'loadout') app.pack = null
       }}
     >
       <Icon name={tab.icon} size={19} />{tab.label}

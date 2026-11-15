@@ -360,6 +360,25 @@ describe('gridItems', () => {
     expect(items('packs', null, '', 'local')).toEqual(['c2'])
   })
 
+  it('places a pack by its own name, ignoring case, not by its first member', () => {
+    const kit = { type: 'github', owner: 'Zed', repo: 'kit', subpath: '' } as const
+    const mixed = [named('alpha', kit), named('beta', { type: 'local', path: '/home/u/beta' })]
+    mixed.push(named('omega', kit), named('zulu', { type: 'local', path: '/home/u/zulu' }))
+    const kitPack: Pack = {
+      key: 'github:Zed/kit',
+      type: 'github',
+      name: 'Zed/kit',
+      skills: ['alpha', 'omega'],
+      folder: '/f'
+    }
+    const shown = gridItems(mixed, [kitPack], '/home/u', 'packs', null, '', 'all')
+    expect(shown.map((i) => (i.kind === 'pack' ? i.pack.name : i.entry.name))).toEqual([
+      'beta',
+      'Zed/kit',
+      'zulu'
+    ])
+  })
+
   it('is flat for the stowed chip and for a search', () => {
     expect(items('packs', null, '', 'stowed')).toEqual(['b1'])
     expect(items('packs', null, 'a', 'all')).toEqual(

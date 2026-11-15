@@ -28,6 +28,7 @@ import { planToggle, type Op } from '../src/core/planner'
 import {
   addLocal,
   applyOps,
+  deployAdded,
   ensureLoadout,
   linkCandidates,
   listLinks,
@@ -510,6 +511,37 @@ describe('togglePack', () => {
       refused: []
     })
     expect((await lstat(join(folder, 'alpha'))).isDirectory()).toBe(true)
+  })
+})
+
+describe('deployAdded', () => {
+  async function setup(): Promise<string> {
+    await ensureLoadout(paths)
+    const root = await clone()
+    await linkCandidates(root, ['alpha', 'beta'], paths)
+    return agentFolder(config.agents[0], paths)
+  }
+
+  test('links every skill for every agent', async () => {
+    const folder = await setup()
+    expect(await deployAdded(['alpha', 'beta'], ['claude-code'], config, paths)).toEqual([])
+    expect(await exists(join(folder, 'alpha'))).toBe(true)
+    expect(await exists(join(folder, 'beta'))).toBe(true)
+  })
+
+  test('a refused skill does not stop the others', async () => {
+    const folder = await setup()
+    await mkdir(join(folder, 'alpha'), { recursive: true })
+    expect(await deployAdded(['alpha', 'beta'], ['claude-code'], config, paths)).toEqual([
+      { skill: 'alpha', message: expect.stringContaining('Loadout did not create it') }
+    ])
+    expect(await exists(join(folder, 'beta'))).toBe(true)
+  })
+
+  test('does nothing for no agent', async () => {
+    const folder = await setup()
+    expect(await deployAdded(['alpha'], [], config, paths)).toEqual([])
+    expect(await exists(join(folder, 'alpha'))).toBe(false)
   })
 })
 

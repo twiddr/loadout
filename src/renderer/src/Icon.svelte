@@ -148,6 +148,12 @@
       'M11 13h4',
       'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'
     ],
+    /** Lucide `square-plus`. */
+    'square-plus': [
+      'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z',
+      'M8 12h8',
+      'M12 8v8'
+    ],
     /** Lucide `panel-right`. */
     'panel-right': [
       'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z',

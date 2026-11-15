@@ -1,8 +1,9 @@
 // The update rehearsal: the packaged app updates itself in a scratch folder through a fake `curl`,
 // once for real and once with a forced swap failure. Run after `pnpm package`:
-//   REHEARSE_FROM=local pnpm exec playwright test --config scripts/rehearse-update/playwright.config.ts
+//   pnpm exec playwright test --config scripts/rehearse-update/playwright.config.ts
 // `REHEARSE_FROM=public` (the default) starts from the public latest release and updates it to the
-// build; `local` starts from the build and updates it to a copy one patch version higher.
+// build. `REHEARSE_FROM=local` starts from the build and updates it to a copy one patch version
+// higher; it is only for a release with no public release before it.
 // It prints one PASS or FAIL line per check, works only in folders under the system temp folder,
 // and stops only the apps it started.
 import { chromium, expect, test, type Page } from '@playwright/test'

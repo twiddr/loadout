@@ -166,7 +166,10 @@ export function gridItems(
       })
     }
   }
-  return items
+  // Each card by the name it shows, so a recruit or remove inside a pack never moves the pack.
+  const title = (item: GridItem): string =>
+    (item.kind === 'pack' ? item.pack.name : item.entry.name).toLowerCase()
+  return items.sort((a, b) => (title(a) < title(b) ? -1 : title(a) > title(b) ? 1 : 0))
 }
 
 /** The notice after a pack toggle that refused a skill; null when nothing was refused. */

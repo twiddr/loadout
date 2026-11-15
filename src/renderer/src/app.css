@@ -1256,12 +1256,22 @@ label.toggle.partial {
   letter-spacing: 0.1em;
   padding: 0 12px;
 }
-.view-switch button.filter-chip:first-child {
+.view-switch .tip:first-child button.filter-chip {
   border-radius: 4px 0 0 4px;
 }
-.view-switch button.filter-chip:last-child {
+.view-switch .tip:last-child button.filter-chip {
   border-radius: 0 4px 4px 0;
   margin-left: -1px;
+}
+/* The view tips open above the toggle, at its right edge, so they stay inside the window. */
+.view-switch .tip-text {
+  top: auto;
+  bottom: 100%;
+  left: auto;
+  right: 0;
+  margin: 0 0 4px;
+  font-family: var(--sans);
+  letter-spacing: 0;
 }
 
 /* The pack card: a skill card with a stacked tile. */
@@ -1296,6 +1306,11 @@ label.toggle.partial {
 }
 .page-line .sep {
   color: var(--faint);
+}
+/* The pack line is mono and spaced; its recruit tip reads like every other tip. */
+.page-line .tip-text {
+  font-family: var(--sans);
+  letter-spacing: normal;
 }
 .empty-card {
   display: flex;
@@ -1703,6 +1718,20 @@ dialog.update .bc-cmd pre {
 }
 .field-label input[type='text'] {
   width: 100%;
+}
+/* The Link and Registry dialogs: the scan table shows Folder, Skill and Note without squeezing them. */
+dialog.scan .dialog-box {
+  width: 720px;
+}
+dialog.scan th {
+  vertical-align: middle;
+}
+/* The agent boxes sit at the left of the footer row; Add deploys the added skills to the ticked ones. */
+.deploy-to {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
 }
 .box {
   border: 1px solid var(--card-border);
