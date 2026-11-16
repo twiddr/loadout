@@ -1512,7 +1512,8 @@ test('the window opens before the tool check, which shows MUSTERING until it end
   writeFileSync(join(home, '.loadout', 'config.json'), serializeConfig(config))
   const app = await _electron.launch({
     args: launchArgs(home),
-    env: { ...process.env, ...env, FAKE_WHOAMI_SLEEP: '3' } as Record<string, string>
+    // Longer than a slow first paint when tests run in parallel, so MUSTERING is still up.
+    env: { ...process.env, ...env, FAKE_WHOAMI_SLEEP: '8' } as Record<string, string>
   })
   try {
     const page = await app.firstWindow()
@@ -1524,7 +1525,7 @@ test('the window opens before the tool check, which shows MUSTERING until it end
     await expect(page.getByRole('checkbox', { name: 'probe Claude Code' })).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Recruit skill' })).toBeVisible()
     await expect(rail.locator('.rail-status', { hasText: /^READY$/ })).toBeVisible({
-      timeout: 10000
+      timeout: 20000
     })
     await expect(page.getByRole('region', { name: 'Claude Code' }).getByText('READY')).toBeVisible()
     await expect(page.getByRole('checkbox', { name: 'probe Claude Code' })).toBeEnabled()

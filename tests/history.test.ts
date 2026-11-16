@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { samePage, takeBack, visit } from '../src/renderer/src/history'
+import { backFrom, samePage, takeBack, visit } from '../src/renderer/src/history'
 
-type Page = { name: string; skill?: string; tab?: string; from?: string; pack?: string | null }
+type Page = {
+  name: string
+  skill?: string
+  tab?: string
+  from?: string
+  pack?: string | null
+  agentId?: string
+  entry?: string
+}
 
 const skill = (name: string, tab = 'briefing'): Page => ({
   name: 'skill',
@@ -73,5 +81,47 @@ describe('history', () => {
     expect(takeBack(stack, exists, packs)).toEqual(kept)
     expect(takeBack(stack, exists, packs)).toEqual({ name: 'loadout', pack: null })
     expect(takeBack(stack, exists, packs)).toBeNull()
+  })
+
+  it('treats candidate pages for different rows as different pages', () => {
+    const cc: Page = { name: 'candidate', agentId: 'claude-code', entry: 'a' }
+    const cx: Page = { name: 'candidate', agentId: 'codex', entry: 'a' }
+    expect(samePage(cc, cx)).toBe(false)
+    expect(samePage(cc, { ...cc })).toBe(true)
+  })
+
+  it('skips a candidate page whose row is gone', () => {
+    const stack: Page[] = [
+      { name: 'recon' },
+      { name: 'candidate', agentId: 'claude-code', entry: 'a' }
+    ]
+    expect(
+      takeBack(
+        stack,
+        () => true,
+        () => true,
+        () => false
+      )
+    ).toEqual({ name: 'recon' })
+  })
+
+  it('skips a page equal to the shown one, so one press always moves', () => {
+    const gone: Page = { name: 'candidate', agentId: 'claude-code', entry: 'a' }
+    const stack: Page[] = [{ name: 'loadout' }, { name: 'recon' }, gone]
+    const yes = (): boolean => true
+    expect(backFrom(stack, { name: 'recon' }, yes, yes, () => false, false)).toEqual({
+      name: 'loadout'
+    })
+  })
+
+  it('drops the open pack in the flat view and skips what then equals the shown page', () => {
+    const grid: Page = { name: 'loadout', pack: null }
+    const open: Page = { name: 'loadout', pack: 'github:acme/tools' }
+    const yes = (): boolean => true
+    expect(backFrom([{ name: 'intel' }, open], grid, yes, yes, yes, false)).toEqual(open)
+    expect(backFrom([{ name: 'intel' }, open], grid, yes, yes, yes, true)).toEqual({
+      name: 'intel',
+      pack: null
+    })
   })
 })

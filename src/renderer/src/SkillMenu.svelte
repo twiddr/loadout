@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Entry, State } from '../../core/ipc'
+  import AddDialog from './AddDialog.svelte'
   import Icon from './Icon.svelte'
   import { check, relocate, remove, reveal, review, update, updateLabel } from './actions'
   import { openTesslDialog } from './state.svelte'
@@ -15,6 +16,8 @@
 
   const busy = $derived(lib.busy !== null)
   const noTessl = $derived(lib.startup.tools.tessl === null)
+  /** The skill page's Add dialog for Recruit more; the LOADOUT page's dialogs are not mounted here. */
+  let add = $state<AddDialog>()
 </script>
 
 {#if labeled}
@@ -51,6 +54,18 @@
       onclick={() => update(entry, lib.entries)}
       disabled={busy || noTool}>{updateLabel(source, lib.entries)}</button
     >
+    {#if labeled}
+      {@const name =
+        source.type === 'github'
+          ? `${source.owner}/${source.repo}`
+          : `${source.workspace}/${source.plugin}`}
+      <button
+        popovertarget={`menu-${id}`}
+        popovertargetaction="hide"
+        onclick={() => add?.scanSource(name)}
+        disabled={busy || noTool}>Recruit more from {name}</button
+      >
+    {/if}
   {/if}
   {#if entry.status === 'ok'}
     <button
@@ -115,3 +130,6 @@
     >
   {/if}
 </div>
+{#if labeled && (entry.source.type === 'github' || entry.source.type === 'tessl')}
+  <AddDialog kind={entry.source.type} {busy} bind:this={add} />
+{/if}

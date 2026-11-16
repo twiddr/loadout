@@ -6,8 +6,11 @@ process.env.LOADOUT_TEST_BACKGROUND = '1'
 export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
+  // Parallel apps load slowly: a first paint can take more than the default 5 s.
+  expect: { timeout: 10_000 },
   retries: 0,
-  workers: 1,
+  fullyParallel: true,
+  workers: 4,
   reporter: [['list']],
   use: { screenshot: 'only-on-failure' }
 })

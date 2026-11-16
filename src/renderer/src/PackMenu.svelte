@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Entry, State } from '../../core/ipc'
   import type { Pack } from '../../core/packs'
+  import AddDialog from './AddDialog.svelte'
   import Icon from './Icon.svelte'
   import { check, reveal, update, updateLabel } from './actions'
   import { openPackRemove } from './state.svelte'
@@ -14,6 +15,7 @@
   // Check, Update and Reveal act on the first member, as they open or check the whole source.
   const first = $derived(members[0])
   const source = $derived(first?.source)
+  let add = $state<AddDialog>()
 </script>
 
 <button
@@ -37,6 +39,12 @@
       onclick={() => update(first, lib.entries)}
       disabled={busy || noTool}>{updateLabel(source, lib.entries)}</button
     >
+    <button
+      popovertarget={`menu-${id}`}
+      popovertargetaction="hide"
+      onclick={() => add?.scanSource(pack.name)}
+      disabled={busy || noTool}>Recruit more from {pack.name}</button
+    >
     <hr class="menu-sep" />
     <button
       popovertarget={`menu-${id}`}
@@ -52,3 +60,4 @@
     disabled={busy}>Remove</button
   >
 </div>
+<AddDialog kind={pack.type} {busy} bind:this={add} />

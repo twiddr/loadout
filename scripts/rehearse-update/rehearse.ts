@@ -77,6 +77,20 @@ async function connect(): Promise<Page> {
   }
 }
 
+/**
+ * Whether the update prompt opens within `ms`. A public release from before the prompt has none; a
+ * later one opens it after a launch check that finds a newer release, also after the restart.
+ */
+function prompted(page: Page, ms: number): Promise<boolean> {
+  return page
+    .locator('dialog.update-prompt')
+    .waitFor({ state: 'visible', timeout: ms })
+    .then(
+      () => true,
+      () => false
+    )
+}
+
 function logLine(page: Page, text: string | RegExp): ReturnType<Page['getByText']> {
   return page.getByRole('article', { name: /^Run \d+$/ }).getByText(text, { exact: true })
 }
@@ -166,7 +180,7 @@ test.afterEach(async () => {
 
 /**
  * Copies the old app into a scratch `Applications`, serves the new DMG through the fake `curl`,
- * starts the old app, and runs UPDATE ›, DOWNLOAD and RESTART. Returns the window of the app that
+ * starts the old app, and runs the prompt's UPDATE (or UPDATE › and DOWNLOAD) and RESTART. Returns the window of the app that
  * the swap script started, and the install path.
  */
 async function updateAndRestart(
@@ -212,8 +226,12 @@ async function updateAndRestart(
     await expect(corner).toBeVisible({ timeout: 30_000 })
   })
   await check(`${label}: ${newVersion} is downloaded, checked and ready`, async () => {
-    await corner.click()
-    await dialog.getByRole('button', { name: 'DOWNLOAD', exact: true }).click()
+    if (await prompted(old, 5_000)) {
+      await old.locator('dialog.update-prompt').getByRole('button', { name: 'UPDATE' }).click()
+    } else {
+      await corner.click()
+      await dialog.getByRole('button', { name: 'DOWNLOAD', exact: true }).click()
+    }
     await expect(dialog.locator('.update-progress')).toContainText(`${newVersion} IS READY`, {
       timeout: 300_000
     })
@@ -228,6 +246,10 @@ async function updateAndRestart(
     async () => {
       page = await connect()
       expect(pids(exe)).toHaveLength(1)
+      // The restarted app can find the same release again and ask; LATER, so the page is usable.
+      if (await prompted(page, 20_000)) {
+        await page.locator('dialog.update-prompt').getByRole('button', { name: 'LATER' }).click()
+      }
     }
   )
   return { page: page!, install }

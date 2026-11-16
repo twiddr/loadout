@@ -1304,6 +1304,10 @@ label.toggle.partial {
   align-items: center;
   gap: 2px;
 }
+.page-line button.recruit-more {
+  position: relative;
+  top: -1px;
+}
 .page-line .sep {
   color: var(--faint);
 }
@@ -1582,6 +1586,10 @@ dialog pre.copy-block {
 /* The update dialog: the release-notes link, COPY and Close share the box's right edge. */
 dialog.update .dialog-box {
   width: 560px;
+}
+/* The update prompt: the question and RELEASE NOTES on one line, then LATER and UPDATE. */
+dialog.update-prompt .dialog-box {
+  width: 440px;
 }
 .update-lead {
   display: flex;

@@ -14,7 +14,11 @@
   const mustering = $derived(app.state?.startup.mustering ?? true)
   const busy = $derived(app.state?.busy != null && !mustering)
 
-  const tabs: { name: Exclude<Page['name'], 'skill'>; label: string; icon: IconName }[] = [
+  const tabs: {
+    name: Exclude<Page['name'], 'skill' | 'candidate'>
+    label: string
+    icon: IconName
+  }[] = [
     { name: 'loadout', label: 'LOADOUT', icon: 'layout-grid' },
     { name: 'intel', label: 'INTEL', icon: 'radio-tower' },
     { name: 'recon', label: 'RECON', icon: 'crosshair' },
@@ -36,8 +40,14 @@
     if (!result.ok) report(result)
   }
 
-  // A skill page belongs to the tab it was opened from.
-  const current = $derived(app.page.name === 'skill' ? app.page.from : app.page.name)
+  // A skill page belongs to the tab it was opened from; a candidate page to RECON.
+  const current = $derived(
+    app.page.name === 'skill'
+      ? app.page.from
+      : app.page.name === 'candidate'
+        ? 'recon'
+        : app.page.name
+  )
 </script>
 
 <nav class="rail" aria-label="Main">

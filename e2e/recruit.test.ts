@@ -159,6 +159,80 @@ test('recruit: the channels preview, recruit, log and undo', async () => {
   }
 })
 
+test('recruit: VIEW opens the candidate page', async () => {
+  const { home, env } = fakeHome()
+  addSamples(home)
+  // The PACKS view: there, mouse Back once stopped on the page already shown.
+  const configPath = join(home, '.loadout', 'config.json')
+  const config = parseConfig(readFileSync(configPath, 'utf8'), configPath)
+  config.loadoutView = 'packs'
+  writeFileSync(configPath, serializeConfig(config))
+  const app = await _electron.launch({
+    args: launchArgs(home),
+    env: { ...process.env, ...env } as Record<string, string>
+  })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.locator('.rail-status', { hasText: /^READY$/ })).toBeVisible({
+      timeout: 10000
+    })
+    await page.getByRole('link', { name: 'Recon' }).click()
+    const row = (agent: string, name: string): Locator => reconRow(page, agent, name)
+    const recon = page.getByRole('link', { name: 'Recon' })
+
+    // VIEW sits before RECRUIT on a RECRUIT row only.
+    await expect(row('Claude Code', 'sample-plain').getByRole('button')).toHaveText([
+      'VIEW',
+      'RECRUIT'
+    ])
+    await expect(
+      row('Claude Code', 'sample-dangling').getByRole('button', { name: 'View' })
+    ).toHaveCount(0)
+    await expect(row('Codex', 'sample-noname').getByRole('button', { name: 'View' })).toHaveCount(0)
+
+    // A folder candidate: the Codex copy of sample-plain, read-only.
+    await row('Codex', 'sample-plain').getByRole('button', { name: 'View' }).click()
+    await expect(page.getByRole('heading', { name: 'sample-plain' })).toBeVisible()
+    await expect(page.getByText('NOT IN LOADOUT', { exact: true })).toBeVisible()
+    const found = page.getByRole('region', { name: 'Found in' })
+    await expect(found).toContainText('Codex')
+    await expect(found).toContainText('~/.codex/skills/sample-plain')
+    await expect(page.getByText('description: A sample skill.')).toBeVisible()
+    await expect(page.locator('.file-row', { hasText: 'SKILL.md' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Decommission skill' })).toHaveCount(0)
+    await expect(page.locator('.main-col').getByRole('checkbox')).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: 'Review' })).toHaveCount(0)
+    await expect(recon).toHaveAttribute('aria-current', 'page')
+
+    await page.getByRole('button', { name: 'Back to Recon' }).click()
+    await expect(page.getByRole('region', { name: 'Unmanaged' })).toBeVisible()
+
+    // A link candidate reads the link's target.
+    await row('Claude Code', 'sample-linked').getByRole('button', { name: 'View' }).click()
+    await expect(page.locator('.skill-address')).toContainText('LINK')
+    await expect(page.locator('.skill-address')).toContainText('~/Code/my-skills/sample-linked')
+    await expect(page.getByText('name: sample-linked')).toBeVisible()
+
+    // RECRUIT on the page opens the dialog; after the recruit, the page returns to Recon.
+    await page.locator('.skill-actions').getByRole('button', { name: 'Recruit' }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('listitem')).toHaveCount(3)
+    await dialog.getByRole('button', { name: 'Recruit' }).click()
+    await expect(dialog.getByText('Recruited sample-linked for Claude Code.')).toBeVisible()
+    await dialog.getByRole('button', { name: 'Done' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole('region', { name: 'Unmanaged' })).toBeVisible()
+    await expect(row('Claude Code', 'sample-linked')).toHaveCount(0)
+    // One mouse Back press moves: past the gone candidate and the Recon page already shown.
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0].emit('swipe', {}, 'left')
+    })
+    await expect(page.getByRole('heading', { name: 'sample-plain' })).toBeVisible()
+  } finally {
+    await app.close()
+  }
+})
+
 /** The Recon row of one unmanaged entry. */
 function reconRow(page: Page, agent: string, name: string): Locator {
   const cell = (text: string): Locator => page.getByRole('cell', { name: text, exact: true })
@@ -205,11 +279,14 @@ test('recruit: the Recon rows, the dialog, the backups and undo', async () => {
 
     await expect(page.getByText(/^\d+ UNMANAGED · 1 BACKUP · \d+ LOADOUT/)).toBeVisible()
     const row = (agent: string, name: string): Locator => reconRow(page, agent, name)
-    await expect(row('Claude Code', 'sample-plain').getByRole('button')).toHaveText('RECRUIT')
+    await expect(row('Claude Code', 'sample-plain').getByRole('button')).toHaveText([
+      'VIEW',
+      'RECRUIT'
+    ])
     await expect(row('Claude Code', 'sample-dangling').getByRole('button')).toHaveText(
       'MOVE TO BACKUP'
     )
-    await expect(row('Codex', 'sample-symlink').getByRole('button')).toHaveText('RECRUIT')
+    await expect(row('Codex', 'sample-symlink').getByRole('button')).toHaveText(['VIEW', 'RECRUIT'])
     await expect(row('Codex', 'tessl__sample')).toContainText(
       'A link into ~/.agents/skills, which another tool manages. Loadout leaves it alone.'
     )
@@ -391,6 +468,8 @@ test('recruit: the Recon rows, the dialog, the backups and undo', async () => {
     const oldPath = join(home, '.claude', 'skills', 'sample-dangling')
     mkdirSync(oldPath)
     await page.getByRole('button', { name: 'Rescan' }).click()
+    // Undo during the Rescan is refused; the folder's row shows that the Rescan ended.
+    await expect(row('Claude Code', 'sample-dangling')).toHaveCount(1)
     await dangling.getByRole('button', { name: 'Undo' }).click()
     await expect(
       dialog.getByText(
@@ -401,6 +480,7 @@ test('recruit: the Recon rows, the dialog, the backups and undo', async () => {
     await dialog.getByRole('button', { name: 'Close' }).click()
     rmSync(oldPath, { recursive: true })
     await page.getByRole('button', { name: 'Rescan' }).click()
+    await expect(row('Claude Code', 'sample-dangling')).toHaveCount(0)
     await dangling.getByRole('button', { name: 'Undo' }).click()
     await expect(dialog.getByRole('heading', { name: 'UNDO' })).toBeVisible()
     await expect(dialog.getByText(/^Loadout's copy of the skill/)).toHaveCount(0)
@@ -435,7 +515,10 @@ test('recruit: the Recon rows, the dialog, the backups and undo', async () => {
       'Your original is back in ~/.claude/skills/sample-plain. "sample-plain" stays in your loadout, off for Claude Code.'
     )
     expect(lstatSync(join(home, '.claude', 'skills', 'sample-plain')).isDirectory()).toBe(true)
-    await expect(row('Claude Code', 'sample-plain').getByRole('button')).toHaveText('RECRUIT')
+    await expect(row('Claude Code', 'sample-plain').getByRole('button')).toHaveText([
+      'VIEW',
+      'RECRUIT'
+    ])
 
     // The dialog closes when its row leaves the state.
     await row('Claude Code', 'sample-claude-only').getByRole('button', { name: 'Recruit' }).click()

@@ -55,7 +55,7 @@ export async function scanSkills(root: string, existingNames: string[]): Promise
     if (disabled === null && name !== null) {
       const first = firstAt.get(name)
       if (existingNames.includes(name)) {
-        disabled = 'already in your loadout'
+        disabled = 'Recruited'
       } else if (first !== undefined) {
         disabled = `"${name}" is also at ${first || '.'}; only the first is offered.`
       } else {

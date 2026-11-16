@@ -22,6 +22,7 @@ import type { EntryFacts, Step } from '../src/core/recruit'
 import { pathsFrom, type Paths } from '../src/core/paths'
 import { addLocal, ensureLoadout, removeEntry, snapshot } from '../src/main/disk'
 import {
+  candidateDetail,
   compareFolders,
   copyExact,
   linksInside,
@@ -1144,5 +1145,55 @@ describe('runUndo', () => {
       path: '~/.claude/skills/probe',
       off: 'probe'
     })
+  })
+})
+
+describe('candidateDetail', () => {
+  test('a folder candidate returns its SKILL.md, files and size', async () => {
+    await skillAt(join(claudeFolder(), 'probe'), 'probe')
+    await write(join(claudeFolder(), 'probe', 'ref.md'), 'x')
+    const result = await candidateDetail(CC, 'probe', config, paths)
+    if (!result.ok) throw new Error(result.message)
+    expect(result.detail.skillMd).toContain('name: probe')
+    expect(result.detail.files).toEqual([
+      { name: 'SKILL.md', folder: false },
+      { name: 'ref.md', folder: false }
+    ])
+    expect(result.detail.size?.files).toBe(2)
+  })
+
+  test('a link candidate reads the link target', async () => {
+    await skillAt(join(work, 'linked'), 'linked')
+    await mkdir(claudeFolder(), { recursive: true })
+    await symlink(join(work, 'linked'), join(claudeFolder(), 'linked'))
+    const result = await candidateDetail(CC, 'linked', config, paths)
+    if (!result.ok) throw new Error(result.message)
+    expect(result.detail.skillMd).toContain('name: linked')
+  })
+
+  test('refuses an entry that is not a recruit row', async () => {
+    await mkdir(claudeFolder(), { recursive: true })
+    await symlink(join(home, 'missing'), join(claudeFolder(), 'gone'))
+    await write(join(claudeFolder(), 'note.txt'), 'x')
+    expect(await candidateDetail(CC, 'gone', config, paths)).toEqual({
+      ok: false,
+      message: '"gone" is not a recruit candidate.'
+    })
+    expect(await candidateDetail(CC, 'note.txt', config, paths)).toEqual({
+      ok: false,
+      message: '"note.txt" is not a recruit candidate.'
+    })
+  })
+
+  test('refuses an unknown agent, a bad entry name and a missing entry', async () => {
+    await mkdir(claudeFolder(), { recursive: true })
+    expect(await candidateDetail('nope', 'probe', config, paths)).toEqual({
+      ok: false,
+      message: 'Unknown agent "nope".'
+    })
+    expect((await candidateDetail(CC, '..', config, paths)).ok).toBe(false)
+    const missing = await candidateDetail(CC, 'absent', config, paths)
+    expect(missing.ok).toBe(false)
+    if (!missing.ok) expect(missing.message).toContain('Press Rescan.')
   })
 })

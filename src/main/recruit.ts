@@ -16,7 +16,7 @@ import {
 import { dirname, join, resolve } from 'node:path'
 import { readAgentFolder, type Unmanaged } from '../core/agents'
 import { agentFolder, type Agent, type Config } from '../core/config'
-import type { Result } from '../core/ipc'
+import type { CandidateDetail, Result } from '../core/ipc'
 import { displayPath, type Paths } from '../core/paths'
 import {
   backupPath,
@@ -34,6 +34,7 @@ import {
   type UnmanagedRow
 } from '../core/recruit'
 import { sizeText } from '../core/size'
+import { readSkillFolder } from '../core/skill'
 import { frontmatterName, validateSkillFolder } from '../core/validate'
 import { applyOps, inBackups, snapshot, type Snapshot } from './disk'
 
@@ -490,6 +491,35 @@ export async function previewRecruit(
   try {
     const prepared = await prepare(agentId, entry, parent, config, paths)
     return prepared.ok ? { ok: true, ...prepared.preview } : prepared
+  } catch (error) {
+    return failure(shownError(error, paths.home))
+  }
+}
+
+/** The folder of a RECRUIT row (a link's target), read-only, for the Recon VIEW page. */
+export async function candidateDetail(
+  agentId: string,
+  entry: string,
+  config: Config,
+  paths: Paths
+): Promise<Result<{ detail: CandidateDetail }>> {
+  try {
+    const checked = checkIds(agentId, entry, config)
+    if (!checked.ok) return checked
+    const { agent } = checked
+    const snap = await snapshot(config, paths)
+    const item = snap.unmanaged.find((u) => u.agentId === agent.id && u.name === entry)
+    if (!item) {
+      return failure(
+        `No unmanaged entry at ${displayPath(join(agentFolder(agent, paths), entry), paths.home)}. Press Rescan.`
+      )
+    }
+    const facts = await readFacts(agent, item, paths)
+    const names = snap.entries.map((e) => e.name)
+    if (rowStatus(facts, config.agents, names, paths).kind !== 'recruit') {
+      return failure(`"${entry}" is not a recruit candidate.`)
+    }
+    return { ok: true, detail: await readSkillFolder(facts.target ?? facts.path) }
   } catch (error) {
     return failure(shownError(error, paths.home))
   }

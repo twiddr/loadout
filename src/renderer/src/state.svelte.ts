@@ -9,6 +9,8 @@ export type Page =
   | { name: 'recon' }
   | { name: 'log' }
   | { name: 'bootcamp' }
+  /** The read-only page of a Recon RECRUIT row. */
+  | { name: 'candidate'; agentId: string; entry: string }
   | {
       name: 'skill'
       skill: string

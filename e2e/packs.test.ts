@@ -210,6 +210,54 @@ test('packs: an opened pack lists its members, and Back to packs returns to the 
   }
 })
 
+test('packs: Recruit more in the skill page ACTIONS menu scans its link', async () => {
+  const { home, env } = packHome()
+  const extra = join(home, '.loadout', 'repos', 'acme', 'tools', 'skills', 'new-one')
+  mkdirSync(extra, { recursive: true })
+  writeFileSync(join(extra, 'SKILL.md'), '---\nname: new-one\ndescription: A probe.\n---\n')
+  try {
+    await withApp(home, env, async (page) => {
+      await toPacks(page)
+      await openPack(page)
+      await page.getByRole('button', { name: 'probe-gh2', exact: true }).click()
+      await page.getByRole('button', { name: 'Actions for probe-gh2', exact: true }).click()
+      await page.getByRole('button', { name: 'Recruit more from acme/tools', exact: true }).click()
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByLabel('GitHub link')).toHaveValue('acme/tools')
+      const fresh = dialog.getByRole('checkbox', { name: 'Add skills/new-one' })
+      await expect(fresh).toBeEnabled()
+      await expect(fresh).not.toBeChecked()
+      for (const name of MEMBERS) {
+        const owned = dialog.getByRole('checkbox', { name: `Add skills/${name}`, exact: true })
+        await expect(owned).toBeChecked()
+        await expect(owned).toBeDisabled()
+      }
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('packs: Recruit more in the pack menu scans its link', async () => {
+  const { home, env } = packHome()
+  try {
+    await withApp(home, env, async (page) => {
+      await toPacks(page)
+      await page.getByRole('button', { name: 'Actions for acme/tools', exact: true }).click()
+      await page.getByRole('button', { name: 'Recruit more from acme/tools', exact: true }).click()
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByLabel('GitHub link')).toHaveValue('acme/tools')
+      for (const name of MEMBERS) {
+        const owned = dialog.getByRole('checkbox', { name: `Add skills/${name}`, exact: true })
+        await expect(owned).toBeChecked()
+        await expect(owned).toBeDisabled()
+      }
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('packs: the recruit icon of an opened pack scans its link', async () => {
   const { home, env } = packHome()
   const extra = join(home, '.loadout', 'repos', 'acme', 'tools', 'skills', 'new-one')
@@ -267,7 +315,7 @@ test('packs: a search or a filter shows skill cards, not pack cards', async () =
   }
 })
 
-test('packs: the pack menu holds its four items in order', async () => {
+test('packs: the pack menu holds its five items in order', async () => {
   const { home, env } = packHome()
   try {
     await withApp(home, env, async (page) => {
@@ -276,6 +324,7 @@ test('packs: the pack menu holds its four items in order', async () => {
       await expect(page.locator('.menu-pop:popover-open button')).toHaveText([
         'Check source',
         'Update acme/tools (3 skills)',
+        'Recruit more from acme/tools',
         'Reveal in Finder',
         'Remove'
       ])

@@ -242,6 +242,7 @@ test('one check per launch', async () => {
       await ready(page)
       await expect.poll(async () => (await appUpdate(page))?.latest).toBe(next)
       expect(curlCalls(home)).toEqual(['run'])
+      await later(page)
       await page.getByRole('button', { name: 'Refresh' }).click()
       await expect(page.locator('.rail-status', { hasText: /^MUSTERING$/ })).toBeVisible()
       await ready(page)
@@ -291,6 +292,18 @@ function updateButton(page: Page, version: string): Locator {
   return page.getByRole('button', { name: `Update to ${version}`, exact: true })
 }
 
+function updatePrompt(page: Page): Locator {
+  return page.locator('dialog.update-prompt')
+}
+
+/** The prompt that a launch check with a newer release opens over the page: wait for it, then LATER. */
+async function later(page: Page): Promise<void> {
+  const prompt = updatePrompt(page)
+  await expect(prompt).toBeVisible({ timeout: 10000 })
+  await prompt.getByRole('button', { name: 'LATER', exact: true }).click()
+  await expect(prompt).toBeHidden()
+}
+
 test('corner with a newer release', async () => {
   const next = nextVersion(CURRENT)
   const { home, env } = fakeHome()
@@ -320,10 +333,101 @@ test('corner without a newer release', async () => {
       await page.waitForTimeout(500)
       await expect(page.locator('.app-version')).toHaveText(CURRENT)
       await expect(page.getByRole('button', { name: /^Update to/ })).toHaveCount(0)
+      await expect(updatePrompt(page)).toBeHidden()
     } finally {
       await app.close()
       rmSync(home, { recursive: true, force: true })
     }
+  }
+})
+
+test('prompt after the launch check', async () => {
+  const next = nextVersion(CURRENT)
+  const { home, env } = fakeHome()
+  writeFileSync(join(home, 'latest-release'), latestRelease(next))
+  const app = await launch(home, { ...env, LOADOUT_UPDATE_CHECK: '1' })
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    const prompt = updatePrompt(page)
+    await expect(prompt).toBeVisible({ timeout: 10000 })
+    await expect(prompt).toContainText(`LOADOUT ${CURRENT}`)
+    await expect(prompt).toContainText(`Loadout ${next} is out.`)
+    const notes = prompt.getByRole('link', { name: 'RELEASE NOTES' })
+    await expect(notes).toHaveAttribute('href', releaseNotesUrl(next))
+    await expect(prompt.locator('.actions button')).toHaveText(['LATER', 'UPDATE'])
+    await expect(prompt.getByRole('button', { name: 'UPDATE', exact: true })).toBeFocused()
+    await prompt.getByRole('button', { name: 'LATER', exact: true }).click()
+    await expect(prompt).toBeHidden()
+    await expect(page.locator('dialog.update')).toBeHidden()
+    await expect(updateButton(page, next)).toBeVisible()
+    expect(await appUpdate(page)).toMatchObject({ latest: next, stage: 'offered' })
+    expect(curlCalls(home)).toEqual(['run'])
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('prompt: Escape is LATER', async () => {
+  const next = nextVersion(CURRENT)
+  const { home, env } = fakeHome()
+  writeFileSync(join(home, 'latest-release'), latestRelease(next))
+  const app = await launch(home, { ...env, LOADOUT_UPDATE_CHECK: '1' })
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    const prompt = updatePrompt(page)
+    await expect(prompt).toBeVisible({ timeout: 10000 })
+    await page.keyboard.press('Escape')
+    await expect(prompt).toBeHidden()
+    await expect(page.locator('dialog.update')).toBeHidden()
+    await expect(updateButton(page, next)).toBeVisible()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('no prompt after a menu check', async () => {
+  const next = nextVersion(CURRENT)
+  const { home, env } = fakeHome()
+  writeFileSync(join(home, 'latest-release'), latestRelease(next))
+  const app = await launch(home, env)
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    await clickMenuCheck(app)
+    await expect(page.locator('dialog.update')).toBeVisible()
+    await page.waitForTimeout(500)
+    await expect(updatePrompt(page)).toBeHidden()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('no prompt over another dialog', async () => {
+  const next = nextVersion(CURRENT)
+  const { home, env } = fakeHome()
+  writeFileSync(join(home, 'latest-release.sleep'), '3')
+  writeFileSync(join(home, 'latest-release'), latestRelease(next))
+  const app = await launch(home, { ...env, LOADOUT_UPDATE_CHECK: '1' })
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    await page
+      .getByRole('navigation', { name: 'Main' })
+      .getByRole('button', { name: 'Settings' })
+      .click()
+    await expect(page.locator('dialog.settings')).toBeVisible()
+    await expect(updateButton(page, next)).toBeVisible({ timeout: 10000 })
+    await page.waitForTimeout(500)
+    await expect(updatePrompt(page)).toBeHidden()
+    await expect(page.locator('dialog.settings')).toBeVisible()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
   }
 })
 
@@ -343,6 +447,7 @@ test('dialog and COPY', async () => {
         return { ok: true }
       })
     })
+    await later(page)
     const dialog = page.locator('dialog.update')
     await expect(dialog).toBeHidden()
     await updateButton(page, next).click()
@@ -407,6 +512,7 @@ test('the marker stays after a failed menu check', async () => {
     const page = await app.firstWindow()
     await ready(page)
     await expect(updateButton(page, next)).toBeVisible()
+    await later(page)
     const boxes = await stubMessageBox(app)
     writeFileSync(join(home, 'latest-release.err'), `${OFFLINE}\n`)
     await clickMenuCheck(app)
@@ -521,6 +627,7 @@ test('download reaches ready', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await reachReady(page)
     expect(await appUpdate(page)).toEqual({
       latest: next,
@@ -535,6 +642,52 @@ test('download reaches ready', async () => {
     expect(bundleVersion(home)).toBe(CURRENT)
     await page.getByRole('link', { name: 'Log' }).click()
     await expect(logLine(page, `Update ${next} is ready.`)).toBeVisible()
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('prompt: UPDATE starts the download', async () => {
+  const next = nextVersion(CURRENT)
+  const { home, env } = updateHome()
+  writeFileSync(join(home, 'download.sleep'), '2')
+  const app = await launch(home, env)
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    const prompt = updatePrompt(page)
+    await expect(prompt).toBeVisible({ timeout: 10000 })
+    await prompt.getByRole('button', { name: 'UPDATE', exact: true }).click()
+    await expect(prompt).toBeHidden()
+    const dialog = page.locator('dialog.update')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('.update-progress')).toContainText(`DOWNLOADING ${next}`)
+    await expect(dialog.locator('.update-progress')).toContainText(`${next} IS READY`, {
+      timeout: 30000
+    })
+    expect(curlCalls(home).filter((call) => call === 'download')).toEqual(['download'])
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('prompt: UPDATE when Loadout cannot write', async () => {
+  const { home, env } = updateHome({ bundle: false })
+  const app = await launch(home, env)
+  try {
+    const page = await app.firstWindow()
+    await ready(page)
+    const prompt = updatePrompt(page)
+    await expect(prompt).toBeVisible({ timeout: 10000 })
+    await prompt.getByRole('button', { name: 'UPDATE', exact: true }).click()
+    await expect(prompt).toBeHidden()
+    const dialog = page.locator('dialog.update')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('details.update-hand')).toHaveAttribute('open')
+    await page.waitForTimeout(500)
+    expect(curlCalls(home)).toEqual(['run'])
   } finally {
     await app.close()
     rmSync(home, { recursive: true, force: true })
@@ -569,6 +722,7 @@ test('failed download', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await expect.poll(() => stage(page)).toBe('offered')
     expect(await invoke(page, 'update-download')).toEqual({ ok: true })
     await expect
@@ -617,6 +771,7 @@ test('cancel', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await expect.poll(() => stage(page)).toBe('offered')
     expect(await invoke(page, 'update-download')).toEqual({ ok: true })
     await expect.poll(() => curlCalls(home)).toContain('download')
@@ -759,6 +914,19 @@ test('next start after a failed swap', async () => {
         message: 'the restart could not replace the app (FAILED move-new 1).'
       })
     expect(existsSync(dir)).toBe(false)
+    const prompt = updatePrompt(page)
+    await expect(prompt).toBeVisible({ timeout: 10000 })
+    await prompt.getByRole('button', { name: 'UPDATE', exact: true }).click()
+    // After a failure UPDATE only opens the dialog: the failure and the steps show, with TRY AGAIN.
+    const dialog = page.locator('dialog.update')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('alert')).toContainText('FAILED move-new 1')
+    await expect(dialog.locator('details.update-hand')).toHaveAttribute('open')
+    await expect(button(dialog, 'TRY AGAIN')).toBeVisible()
+    await page.waitForTimeout(500)
+    expect(await stage(page)).toBe('failed')
+    expect(curlCalls(home)).toEqual(['run'])
+    await button(dialog, 'Close').click()
     await page.getByRole('link', { name: 'Log' }).click()
     await expect(logLine(page, 'Update: FAILED move-new 1')).toBeVisible()
     await expect(logLine(page, 'Update: RESTORED')).toBeVisible()
@@ -793,6 +961,7 @@ test('next start deletes an old bundle with an app.asar', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await expect.poll(() => existsSync(dir)).toBe(false)
     await page.getByRole('link', { name: 'Log' }).click()
     await expect(logLine(page, 'Update: DONE')).toBeVisible()
@@ -840,6 +1009,7 @@ test('next start: the swap log reaches a page that loads late', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await page.getByRole('link', { name: 'Log' }).click()
     await expect(logLine(page, 'Update: DONE')).toBeVisible()
   } finally {
@@ -857,6 +1027,7 @@ test('menu check while ready', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await expect.poll(() => stage(page)).toBe('offered')
     // A still newer release appears while the download runs: the update keeps its version.
     writeFileSync(join(home, 'latest-release'), latestRelease(nextVersion(next)))
@@ -900,6 +1071,7 @@ test('dialog: offered', async () => {
     const page = await app.firstWindow()
     await ready(page)
     await expect.poll(() => stage(page)).toBe('offered')
+    await later(page)
     const dialog = await openDialog(page)
     await expect(dialog.locator('details.update-hand')).not.toHaveAttribute('open')
     await expect(dialog.locator('details.update-hand summary')).toHaveText('INSTALL BY HAND ›')
@@ -926,6 +1098,7 @@ test('dialog: downloading then ready', async () => {
     const page = await app.firstWindow()
     await ready(page)
     await expect.poll(() => stage(page)).toBe('offered')
+    await later(page)
     const dialog = await openDialog(page)
     await button(dialog, 'DOWNLOAD').click()
     const progress = dialog.locator('.update-progress')
@@ -955,6 +1128,7 @@ test('dialog: close keeps the download', async () => {
     const page = await app.firstWindow()
     await ready(page)
     await expect.poll(() => stage(page)).toBe('offered')
+    await later(page)
     let dialog = await openDialog(page)
     await button(dialog, 'DOWNLOAD').click()
     await expect(dialog.locator('.update-progress')).toContainText(`DOWNLOADING ${next}`)
@@ -977,6 +1151,7 @@ test('dialog: failed shows the steps', async () => {
     const page = await app.firstWindow()
     await ready(page)
     await expect.poll(() => stage(page)).toBe('offered')
+    await later(page)
     const dialog = await openDialog(page)
     await button(dialog, 'DOWNLOAD').click()
     await expect(dialog.getByRole('alert')).toHaveText(
@@ -1003,6 +1178,7 @@ test('dialog: cannot write shows the steps', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     const dialog = await openDialog(page)
     await expect(dialog).toContainText(
       'Loadout cannot replace itself here: Loadout is not running from an app bundle. Install it by hand.'
@@ -1031,6 +1207,7 @@ test('dialog: refused restart notice', async () => {
   try {
     const page = await app.firstWindow()
     await ready(page)
+    await later(page)
     await reachReady(page)
     let dialog = await openDialog(page)
     await expect(dialog.locator('.update-progress')).toContainText(`${next} IS READY`)

@@ -1,6 +1,7 @@
 <script lang="ts">
   import BootCampPage from './BootCampPage.svelte'
   import BriefingDialog from './BriefingDialog.svelte'
+  import CandidatePage from './CandidatePage.svelte'
   import FixDialog from './FixDialog.svelte'
   import Icon from './Icon.svelte'
   import ForkDialog from './ForkDialog.svelte'
@@ -15,12 +16,13 @@
   import SettingsDialog from './SettingsDialog.svelte'
   import UnpublishDialog from './UnpublishDialog.svelte'
   import UpdateDialog from './UpdateDialog.svelte'
+  import UpdatePrompt from './UpdatePrompt.svelte'
   import SkillPage from './SkillPage.svelte'
   import SquadPanel from './SquadPanel.svelte'
   import { sourceKey } from '../../core/checks'
   import { confirmRemove, confirmRemovePack, publish, runFix, unpublish } from './actions'
   import { api } from './api'
-  import { samePage, takeBack, visit } from './history'
+  import { backFrom, visit } from './history'
   import {
     app,
     load,
@@ -34,6 +36,7 @@
 
   let settingsDialog = $state<HTMLDialogElement>()
   let updateDialog = $state<HTMLDialogElement>()
+  let updatePrompt = $state<HTMLDialogElement>()
 
   void load()
 
@@ -63,13 +66,13 @@
       app.state?.entries.some((x) => x.name === skill) ?? false
     const packExists = (key: string): boolean =>
       app.state?.packs.some((p) => p.key === key) ?? false
-    let spot = takeBack(back, exists, packExists)
+    const candidateExists = (agentId: string, entry: string): boolean =>
+      app.state?.unmanaged.some(
+        (u) => u.agentId === agentId && u.name === entry && u.recruit.kind === 'recruit'
+      ) ?? false
     // SKILLS always shows the flat view, so a step back there drops its pack.
-    while (spot && app.state?.loadoutView === 'skills') {
-      spot = { ...spot, pack: null }
-      if (!samePage(spot, shown)) break
-      spot = takeBack(back, exists, packExists)
-    }
+    const flat = app.state?.loadoutView === 'skills'
+    const spot = backFrom(back, shown, exists, packExists, candidateExists, flat)
     if (!spot) return
     const { pack, ...page } = spot
     goingBack = true
@@ -85,11 +88,17 @@
   }
   api.on('back', goBack)
 
-  // UPDATE › and the menu's Check for Updates… open the same dialog; it never opens by itself.
+  // UPDATE ›, the menu's Check for Updates… and the prompt's UPDATE open the same dialog.
   function openUpdate(): void {
+    updatePrompt?.close()
     if (!updateDialog?.open) updateDialog?.showModal()
   }
   api.on('open-app-update', openUpdate)
+
+  // A launch or noon check found a newer release; the prompt never opens over another dialog.
+  api.on('prompt-app-update', () => {
+    if (app.state?.appUpdate && !document.querySelector('dialog[open]')) updatePrompt?.showModal()
+  })
 
   const eyebrow = $derived(app.state?.startup.tesslUser?.toUpperCase() ?? null)
 
@@ -128,6 +137,8 @@
           <ReconPage {state} {eyebrow} />
         {:else if app.page.name === 'log'}
           <LogPage {state} {eyebrow} />
+        {:else if app.page.name === 'candidate'}
+          <CandidatePage {state} agentId={app.page.agentId} entry={app.page.entry} />
         {:else if app.page.name === 'skill'}
           <SkillPage {state} skill={app.page.skill} tab={app.page.tab} from={app.page.from} />
         {/if}
@@ -182,6 +193,7 @@
   <SettingsDialog state={lib} bind:dialog={settingsDialog} />
   <BriefingDialog />
   <UpdateDialog bind:dialog={updateDialog} />
+  <UpdatePrompt bind:dialog={updatePrompt} onupdate={openUpdate} />
   <FixDialog
     bind:dialog={tesslDialogs.fix}
     {entry}

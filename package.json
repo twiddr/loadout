@@ -1,6 +1,6 @@
 {
   "name": "loadout",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "One place to manage agent skills for Claude Code and Codex",
   "main": "./out/main/index.js",

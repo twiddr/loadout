@@ -164,6 +164,17 @@
                   <td class="recon-act">
                     {#if item.recruit.kind === 'recruit'}
                       <button
+                        class="small"
+                        aria-label="View"
+                        onclick={() =>
+                          (app.page = {
+                            name: 'candidate',
+                            agentId: item.agentId,
+                            entry: item.name
+                          })}
+                        disabled={lib.busy !== null}>VIEW</button
+                      >
+                      <button
                         class="small primary"
                         aria-label="Recruit"
                         onclick={() => openRecruit('recruit', item.agentId, item.name)}
@@ -194,11 +205,13 @@
                     <td></td>
                     <td class="recon-name synced-name">{name}</td>
                     <td><span class="recon-tag synced">SYNCED</span></td>
-                    <td colspan="2">
+                    <td>
                       <span class="recon-target">
                         <span class="recon-path">anthropic-skills:{name}</span>
-                        {#if inLibrary(name)}<span class="recon-tag">IN LOADOUT</span>{/if}
                       </span>
+                    </td>
+                    <td class="recon-act">
+                      {#if inLibrary(name)}<span class="recon-tag">IN LOADOUT</span>{/if}
                     </td>
                   </tr>
                 {/each}

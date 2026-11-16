@@ -141,6 +141,7 @@ import { currentFixes, deleteFix, finishFix, readFix, saveBefore, undoFix } from
 import { run, type RunResult } from './process'
 import { checkLatest, curlPath } from './release'
 import {
+  candidateDetail,
   listBackups,
   previewRecruit,
   previewUndo,
@@ -1454,6 +1455,12 @@ function registerHandlers(): void {
     }
   )
 
+  handle('candidate-detail', async (payload: { agentId: string; entry: string }) => {
+    const bad = badRecruitPayload(payload)
+    if (bad) return bad
+    return candidateDetail(payload.agentId, payload.entry, config, paths)
+  })
+
   handle('choose-folder', async () => ({ ok: true, folder: await chooseFolder() }))
 
   handle(
@@ -1905,12 +1912,15 @@ async function downloadUpdate(bundle: string, latest: string, signal: AbortSigna
   }
 }
 
-/** A check with no user action: a failure writes one Log line and shows nothing in the window. */
+/**
+ * A check with no user action: a failure writes one Log line and shows nothing in the window; a
+ * known update asks LATER or UPDATE (ADR `20261116-app-update-prompt`).
+ */
 function quietCheck(): void {
   void runAppCheck().then((latest) => {
-    if (!latest.ok && !appCheckAbort.signal.aborted) {
-      note('app-update', `Update check failed: ${latest.message}`, null)
-    }
+    if (appCheckAbort.signal.aborted) return
+    if (!latest.ok) note('app-update', `Update check failed: ${latest.message}`, null)
+    else if (appUpdate) window?.webContents.send('prompt-app-update')
   })
 }
 

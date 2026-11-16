@@ -57,7 +57,7 @@ test('offers the root itself when it holds SKILL.md', async () => {
 test('disables a name already in the library', async () => {
   await skill(join(root, 'skills/beta'), 'beta')
   const [candidate] = await scanSkills(root, ['beta'])
-  expect(candidate.disabled).toBe('already in your loadout')
+  expect(candidate.disabled).toBe('Recruited')
 })
 
 test('offers a folder whose name differs from the frontmatter name', async () => {

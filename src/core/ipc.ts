@@ -147,6 +147,9 @@ export interface SkillDetail {
   installed: Manifest | null
 }
 
+/** What the Recon VIEW page shows of a recruit candidate: its folder, read-only. */
+export type CandidateDetail = Pick<SkillDetail, 'skillMd' | 'files' | 'size'>
+
 /** A pack member a pack job left as it was, with the reason. */
 export interface PackRefusal {
   skill: string
@@ -193,6 +196,7 @@ export const INVOKE_CHANNELS = [
   'recruit-undo',
   'reveal-backup',
   'skill-detail',
+  'candidate-detail',
   'check',
   'check-all',
   'check-registry',
@@ -204,7 +208,13 @@ export const INVOKE_CHANNELS = [
   'update-restart'
 ] as const
 
-export const LISTEN_CHANNELS = ['state', 'log', 'back', 'open-app-update'] as const
+export const LISTEN_CHANNELS = [
+  'state',
+  'log',
+  'back',
+  'open-app-update',
+  'prompt-app-update'
+] as const
 
 /** The skill's manifest in git after a publish. `clean` also covers a folder outside git and a missing git. */
 export type ManifestState = 'clean' | 'uncommitted' | 'committed' | 'commit-failed'
@@ -335,6 +345,10 @@ export interface LoadoutApi {
     channel: 'skill-detail',
     payload: { skill: string }
   ): Promise<Result<{ detail: SkillDetail }>>
+  invoke(
+    channel: 'candidate-detail',
+    payload: { agentId: string; entry: string }
+  ): Promise<Result<{ detail: CandidateDetail }>>
   invoke(channel: 'check', payload: { skill: string }): Promise<Result<{ check: SourceCheck }>>
   invoke(channel: 'check-all'): Promise<Result>
   invoke(
@@ -353,4 +367,6 @@ export interface LoadoutApi {
   on(channel: 'back', handler: () => void): () => void
   /** A menu check found a newer release, or one is already known: the page opens the update dialog. */
   on(channel: 'open-app-update', handler: () => void): () => void
+  /** A launch or noon check found a newer release: the page asks LATER or UPDATE. */
+  on(channel: 'prompt-app-update', handler: () => void): () => void
 }
