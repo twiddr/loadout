@@ -2707,6 +2707,9 @@ button.skill-tab[aria-selected='true'] {
 .fm-key {
   color: var(--accent);
 }
+.fm-value {
+  white-space: pre-wrap;
+}
 .review-score b {
   color: var(--amber-text);
 }

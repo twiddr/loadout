@@ -180,6 +180,94 @@ describe('splitFrontmatter', () => {
   it('returns the whole text as body without a block', () => {
     expect(splitFrontmatter('# T\n')).toEqual({ fields: [], body: '# T\n' })
   })
+
+  it('joins a folded block scalar into one value', () => {
+    const text = [
+      '---',
+      'name: project-toolkit',
+      'description: >-',
+      '  Use when starting (STATUS, roadmap,',
+      '  ADRs, project tier): "set up the docs structure".',
+      '  Also use for upkeep on an initialized repo: "check the docs".',
+      '---',
+      '# T',
+      ''
+    ].join('\n')
+    expect(splitFrontmatter(text)).toEqual({
+      fields: [
+        ['name', 'project-toolkit'],
+        [
+          'description',
+          'Use when starting (STATUS, roadmap, ADRs, project tier): "set up the docs structure". Also use for upkeep on an initialized repo: "check the docs".'
+        ]
+      ],
+      body: '# T\n'
+    })
+  })
+
+  it('keeps the line breaks of a literal block scalar', () => {
+    expect(splitFrontmatter('---\ndescription: |\n  one\n  two\n---\n').fields).toEqual([
+      ['description', 'one\ntwo']
+    ])
+  })
+
+  it('reads a block scalar with carriage returns', () => {
+    expect(splitFrontmatter('---\r\ndescription: >-\r\n  a\r\n  b\r\n---\r\nbody\r\n')).toEqual({
+      fields: [['description', 'a b']],
+      body: 'body\r\n'
+    })
+  })
+
+  it('keeps numbers and booleans as written', () => {
+    expect(
+      splitFrontmatter('---\nversion: 1.0\ndisable-model-invocation: true\nempty:\n---\n').fields
+    ).toEqual([
+      ['version', '1.0'],
+      ['disable-model-invocation', 'true'],
+      ['empty', '']
+    ])
+  })
+
+  it('shows a nested map as indented lines below its key', () => {
+    const text = '---\nname: x\nmetadata:\n  version: "1.1.1"\n  author: pydantic\n---\n'
+    expect(splitFrontmatter(text).fields).toEqual([
+      ['name', 'x'],
+      ['metadata', '\n  version: "1.1.1"\n  author: pydantic']
+    ])
+  })
+
+  it('shows a nested map of one entry below its key', () => {
+    expect(splitFrontmatter('---\nmetadata:\n  version: "1.0"\n---\n').fields).toEqual([
+      ['metadata', '\n  version: "1.0"']
+    ])
+  })
+
+  it('keeps a long value inside a nested map on one line', () => {
+    const command = `echo ${'word '.repeat(30).trim()}`
+    expect(splitFrontmatter(`---\nhooks:\n  command: '${command}'\n---\n`).fields).toEqual([
+      ['hooks', `\n  command: '${command}'`]
+    ])
+  })
+
+  it('shows a flow list on one line', () => {
+    expect(splitFrontmatter('---\nallowed-tools: [Read, Grep]\n---\n').fields).toEqual([
+      ['allowed-tools', '[ Read, Grep ]']
+    ])
+  })
+
+  it('leaves out comment lines', () => {
+    expect(splitFrontmatter('---\nname: x\n# note: not a field\n---\n').fields).toEqual([
+      ['name', 'x']
+    ])
+  })
+
+  it('falls back to key and value lines when the block is not valid YAML', () => {
+    const text = '---\nname: x\ndescription: Use for style: directive, :global.\n---\n'
+    expect(splitFrontmatter(text).fields).toEqual([
+      ['name', 'x'],
+      ['description', 'Use for style: directive, :global.']
+    ])
+  })
 })
 
 describe('formatSize', () => {

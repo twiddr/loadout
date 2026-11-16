@@ -1,6 +1,7 @@
 import { sourceKey } from '../../core/checks'
 import { displayPath } from '../../core/paths'
 import { sizeText } from '../../core/size'
+import { isCollection, isMap, isScalar, parseDocument, stringify } from 'yaml'
 import type { LoadoutView } from '../../core/config'
 import type { Pack } from '../../core/packs'
 import type {
@@ -309,12 +310,41 @@ export function agentCode(agent: { id: string; label: string }): string {
   return AGENT_CODES[agent.id] ?? agent.label.slice(0, 2).toUpperCase()
 }
 
-/** The leading `---` block as `key: value` pairs (quotes and `\r` stripped), and the rest of the text. */
+/**
+ * The leading `---` block as `key` and display value pairs, and the rest of the text. The block is
+ * read as YAML with the failsafe schema, so every scalar stays as written (`1.0`, `true`) and a block
+ * scalar (`>-`, `|`) gives its whole value. A nested map or list shows as its YAML: a flow one
+ * (`[a, b]`) on the key line, a block one indented on the lines below its key. A block that is not a
+ * valid YAML map falls back to one `key: value` pair per line (quotes and `\r` stripped).
+ */
 export function splitFrontmatter(text: string): { fields: [string, string][]; body: string } {
   const match = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(text)
   if (!match) return { fields: [], body: text }
+  return { fields: yamlFields(match[1]) ?? lineFields(match[1]), body: text.slice(match[0].length) }
+}
+
+function yamlFields(block: string): [string, string][] | null {
+  const doc = parseDocument(block, { schema: 'failsafe' })
+  if (doc.errors.length > 0 || !isMap(doc.contents)) return null
+  return doc.contents.items.map((pair) => {
+    if (pair.value === null || isScalar(pair.value)) {
+      return [String(pair.key), String(pair.value?.value ?? '').trimEnd()]
+    }
+    const yaml = stringify(pair.value, { schema: 'failsafe', lineWidth: 0 }).trimEnd()
+    if (isCollection(pair.value) && pair.value.flow) return [String(pair.key), yaml]
+    return [
+      String(pair.key),
+      yaml
+        .split('\n')
+        .map((line) => `\n  ${line}`)
+        .join('')
+    ]
+  })
+}
+
+function lineFields(block: string): [string, string][] {
   const fields: [string, string][] = []
-  for (const line of match[1].split('\n')) {
+  for (const line of block.split('\n')) {
     const colon = line.indexOf(':')
     if (colon <= 0) continue
     const value = line
@@ -324,7 +354,7 @@ export function splitFrontmatter(text: string): { fields: [string, string][]; bo
       .replace(/^(["'])(.*)\1$/, '$2')
     fields.push([line.slice(0, colon).trim(), value])
   }
-  return { fields, body: text.slice(match[0].length) }
+  return fields
 }
 
 export function formatSize(size: { bytes: number; files: number }): string {

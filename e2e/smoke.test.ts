@@ -944,6 +944,46 @@ test('skill page: briefing renders markdown, escapes HTML, blocks link navigatio
   }
 })
 
+test('skill page: briefing shows a folded YAML description whole and a nested map below its key', async () => {
+  const { home, env } = fakeHome()
+  writeFileSync(
+    join(home, 'Code', 'Skills', 'probe', 'SKILL.md'),
+    [
+      '---',
+      'name: probe',
+      'description: >-',
+      '  Use when starting (STATUS, roadmap,',
+      '  ADRs, project tier): "set up the docs".',
+      'metadata:',
+      '  version: "1.0"',
+      '---',
+      '# Probe',
+      ''
+    ].join('\n')
+  )
+  const app = await _electron.launch({
+    args: launchArgs(home),
+    env: { ...process.env, ...env } as Record<string, string>
+  })
+  try {
+    const page = await app.firstWindow()
+    await page.getByRole('button', { name: 'probe', exact: true }).click()
+    const rows = page.locator('.frontmatter > div')
+    await expect(rows).toHaveText([
+      'name: probe',
+      'description: Use when starting (STATUS, roadmap, ADRs, project tier): "set up the docs".',
+      'metadata: \n  version: "1.0"'
+    ])
+    // The nested map takes its own line below the key: its row is two lines high, the name row one.
+    const name = await rows.nth(0).boundingBox()
+    const metadata = await rows.nth(2).boundingBox()
+    expect(metadata!.height).toBeGreaterThan(name!.height * 1.5)
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('shows Refresh after a failed load and recovers', async () => {
   const { home, env } = fakeHome()
   const library = join(home, '.loadout', 'skills')

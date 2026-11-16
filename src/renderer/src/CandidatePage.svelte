@@ -95,7 +95,9 @@
             {#if parts.fields.length > 0}
               <div class="frontmatter">
                 {#each parts.fields as [name, value], i (i)}
-                  <div><span class="fm-key">{name}:</span> {value}</div>
+                  <div>
+                    <span class="fm-key">{name}:</span> <span class="fm-value">{value}</span>
+                  </div>
                 {/each}
               </div>
             {/if}

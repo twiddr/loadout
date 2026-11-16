@@ -533,7 +533,9 @@
                     {#if split.fields.length > 0}
                       <div class="frontmatter">
                         {#each split.fields as [key, value], j (j)}
-                          <div><span class="fm-key">{key}:</span> {value}</div>
+                          <div>
+                            <span class="fm-key">{key}:</span> <span class="fm-value">{value}</span>
+                          </div>
                         {/each}
                       </div>
                     {/if}
@@ -568,7 +570,9 @@
             {#if parts.fields.length > 0}
               <div class="frontmatter">
                 {#each parts.fields as [key, value], i (i)}
-                  <div><span class="fm-key">{key}:</span> {value}</div>
+                  <div>
+                    <span class="fm-key">{key}:</span> <span class="fm-value">{value}</span>
+                  </div>
                 {/each}
               </div>
             {/if}
