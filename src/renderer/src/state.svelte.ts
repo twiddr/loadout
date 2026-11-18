@@ -42,6 +42,8 @@ export const app = $state<{
   platoonHidden: boolean
   /** The PLATOON panel slides; only a toggle animates it, never a page change. */
   platoonSliding: boolean
+  /** A fix that changed files and waits for its FIXED dialog; cleared when the dialog closes. */
+  fixDone: { skill: string; files: number } | null
 }>({
   state: null,
   log: [],
@@ -56,7 +58,8 @@ export const app = $state<{
   lastStartup: null,
   undone: null,
   platoonHidden: false,
-  platoonSliding: false
+  platoonSliding: false,
+  fixDone: null
 })
 
 /** Hides or shows the PLATOON panel on the skill page, with the slide. */

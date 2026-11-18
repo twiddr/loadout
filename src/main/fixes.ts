@@ -98,7 +98,8 @@ async function writeRecord(
 }
 
 /**
- * After a fix ran: records it when the folder differs from the copy, else deletes the copy. When a
+ * After a fix ran: records it when the folder differs from the copy, else deletes the copy. Returns
+ * the number of changed files. When a
  * read fails, the fix is recorded as not undoable before the error is thrown, so the FIX tab shows
  * it and KEEP FIX deletes the copy.
  */
@@ -107,7 +108,7 @@ export async function finishFix(
   skill: string,
   folder: string,
   now: number
-): Promise<boolean> {
+): Promise<number> {
   let current: SkillFile[]
   let old: SkillFile[]
   try {
@@ -116,12 +117,13 @@ export async function finishFix(
     await writeRecord(paths, skill, now, '')
     throw error
   }
-  if (compare(old, current).length === 0) {
+  const files = compare(old, current).length
+  if (files === 0) {
     await deleteFix(paths, skill)
-    return false
+    return 0
   }
   await writeRecord(paths, skill, now, hashSkill(current))
-  return true
+  return files
 }
 
 async function readRecord(

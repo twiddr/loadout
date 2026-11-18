@@ -14,7 +14,9 @@ import {
   readSavedReview,
   reviewFromStdout,
   saveReview,
-  type SavedReview
+  skillTexts,
+  type SavedReview,
+  type SkillFile
 } from '../src/main/reviews'
 
 let home: string
@@ -288,5 +290,40 @@ describe('editedFiles', () => {
   test('editedFiles: nothing without a manifest or a readable folder', async () => {
     expect(await editedFiles(await skill('plain'))).toEqual([])
     expect(await editedFiles(join(home, 'missing'))).toEqual([])
+  })
+})
+
+describe('skillTexts', () => {
+  const file = (rel: string, text: string): SkillFile => ({
+    rel,
+    link: false,
+    data: Buffer.from(text),
+    resolved: null
+  })
+
+  test('gives the text of a text file', () => {
+    expect(skillTexts([file('SKILL.md', 'hi')])).toEqual([
+      { path: 'SKILL.md', text: 'hi', binary: false }
+    ])
+  })
+
+  test('marks a file with a zero byte as binary, with no text', () => {
+    expect(
+      skillTexts([{ rel: 'a.png', link: false, data: Buffer.from([1, 0, 2]), resolved: null }])
+    ).toEqual([{ path: 'a.png', text: null, binary: true }])
+  })
+
+  test('gives a symlink the text of its target', () => {
+    expect(
+      skillTexts([
+        { rel: 'l.md', link: true, data: Buffer.from('link:x'), resolved: Buffer.from('target') }
+      ])
+    ).toEqual([{ path: 'l.md', text: 'target', binary: false }])
+  })
+
+  test('gives a dangling symlink no text and no binary mark', () => {
+    expect(
+      skillTexts([{ rel: 'l.md', link: true, data: Buffer.from('link:x'), resolved: null }])
+    ).toEqual([{ path: 'l.md', text: null, binary: false }])
   })
 })

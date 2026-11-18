@@ -26,6 +26,12 @@ test('skill page: hides and shows the PLATOON panel', async () => {
     await page.getByRole('button', { name: 'probe', exact: true }).click()
     const file = page.getByRole('region', { name: 'Skill file' })
     const narrow = (await file.boundingBox())!.width
+    // The Hide icon's centre is on the version's line, its left edge on the PLATOON title's.
+    const icon = (await hide.locator('svg').boundingBox())!
+    const version = (await page.locator('.app-version').boundingBox())!
+    const title = (await page.locator('.squad-title').boundingBox())!
+    expect(Math.abs(icon.y + icon.height / 2 - (version.y + version.height / 2))).toBeLessThan(1.5)
+    expect(Math.abs(icon.x - title.x)).toBeLessThan(1.5)
     await hide.click()
     await expect(panel).toHaveAttribute('inert', '')
     await expect(show).toBeVisible()

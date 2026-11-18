@@ -154,6 +154,7 @@ elif [ "$1 $2" = "search --json" ]; then
 elif [ "$1 $2" = "review run" ]; then
   if [ -f "${home}/review.json" ]; then /bin/cat "${home}/review.json"; else echo '{"review":{"reviewScore":90}}'; fi
 elif [ "$1 $2" = "review fix" ]; then
+  if [ -f "${home}/fix.sleep" ]; then /bin/sleep "$(/bin/cat "${home}/fix.sleep")"; fi
   # The target is the third argument: append a line to SKILL.md and add a file in a new folder.
   printf 'Fixed line.\\n' >> "$3/SKILL.md"
   /bin/mkdir -p "$3/references"

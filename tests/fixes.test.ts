@@ -88,7 +88,7 @@ describe('saveBefore', () => {
 describe('finishFix', () => {
   test('an unchanged folder leaves no saved fix', async () => {
     await saveBefore(paths, 'a', folder)
-    expect(await finishFix(paths, 'a', folder, 5)).toBe(false)
+    expect(await finishFix(paths, 'a', folder, 5)).toBe(0)
     expect(existsSync(join(paths.fixes, 'a'))).toBe(false)
     expect(await readFix(paths, entry)).toBeNull()
   })
@@ -96,7 +96,7 @@ describe('finishFix', () => {
   test('a change only under node_modules is no change', async () => {
     await saveBefore(paths, 'a', folder)
     await put('node_modules/x/i.js', 'y\n')
-    expect(await finishFix(paths, 'a', folder, 5)).toBe(false)
+    expect(await finishFix(paths, 'a', folder, 5)).toBe(0)
   })
 
   test('a read error records the fix as not undoable, then throws', async () => {
@@ -115,9 +115,9 @@ describe('finishFix', () => {
     }
   })
 
-  test('a changed folder is recorded and undoable', async () => {
+  test('a changed folder is recorded and undoable, and the count of changed files returned', async () => {
     await fakeFix()
-    expect(await finishFix(paths, 'a', folder, 5)).toBe(true)
+    expect(await finishFix(paths, 'a', folder, 5)).toBe(4)
     const fix = await readFix(paths, entry)
     expect(fix).toMatchObject({ fixedAt: 5, undoable: true })
   })

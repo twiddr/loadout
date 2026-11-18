@@ -160,7 +160,8 @@ import {
   readSkill,
   reviewFromStdout,
   saveReview,
-  savedScore
+  savedScore,
+  skillTexts
 } from './reviews'
 import { fallbackDirsFrom, recheckMsFrom, startupCheck, toolVersion } from './startup'
 import { runTesslUpdate, updateEnv } from './tesslupdate'
@@ -1109,9 +1110,9 @@ function registerHandlers(): void {
           }
         )
         // Recorded on any outcome, so a fix that failed half-way can still be undone.
-        let changed: boolean
+        let files: number
         try {
-          changed = await finishFix(paths, skill, checked.target, Date.now())
+          files = await finishFix(paths, skill, checked.target, Date.now())
         } catch (error) {
           const why = error instanceof Error ? error.message : String(error)
           return {
@@ -1121,7 +1122,7 @@ function registerHandlers(): void {
         }
         if (!ran.ok) return ran
         if (ran.result.code !== 0) return exitFailure('Fix', ran.result.code)
-        return { ok: true, changed }
+        return { ok: true, files }
       })
   )
 
@@ -1576,7 +1577,16 @@ function registerHandlers(): void {
         : null
     return {
       ok: true,
-      detail: { ...folder, git, history, review, fix, syncedCopy, installed }
+      detail: {
+        ...folder,
+        texts: files ? skillTexts(files) : [],
+        git,
+        history,
+        review,
+        fix,
+        syncedCopy,
+        installed
+      }
     }
   })
 

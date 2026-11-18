@@ -6,13 +6,11 @@
   import {
     agentCode,
     ago,
-    fixLabel,
     isRunning,
     pointsToLog,
     scoreText,
     scoreTone,
     serial,
-    showAges,
     sourceLine
   } from './format'
   import Icon from './Icon.svelte'
@@ -40,8 +38,6 @@
   const row = $derived(app.rowResult[entry.name])
   const saved = $derived(lib.reviews[entry.name])
   const fix = $derived(lib.fixes[entry.name])
-  // The ages show only when the score, the fix or the update is alone on the top line.
-  const ages = $derived(showAges(saved !== undefined, fix !== undefined, ready))
   // Two lines each: what the mark is, then what a click does.
   const reviewTip = $derived(
     saved ? `Tessl review score, ${ago(saved.reviewedAt, app.now)}.\nClick to read the review.` : ''
@@ -101,18 +97,16 @@
       {#if saved}
         <Tip text={reviewTip}>
           <button
-            class="card-review"
+            class="card-review score {scoreTone(saved.score)}"
             aria-label={`Review ${entry.name}`}
-            onclick={() => open('review')}
-            ><span class="score {scoreTone(saved.score)}">{scoreText(saved.score)}</span
-            >{#if ages}{` · ${ago(saved.reviewedAt, app.now)}`}{/if}</button
+            onclick={() => open('review')}>{scoreText(saved.score)}</button
           >
         </Tip>
       {/if}
       {#if fix}
         <Tip text={fixTip}>
           <button class="card-review" aria-label={`Fix ${entry.name}`} onclick={() => open('fix')}
-            >{fixLabel(fix, app.now, ages)}</button
+            >fixed</button
           >
         </Tip>
       {/if}

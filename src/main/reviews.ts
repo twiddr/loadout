@@ -11,6 +11,7 @@ import {
   writeFile
 } from 'node:fs/promises'
 import { join } from 'node:path'
+import type { SkillText } from '../core/ipc'
 import type { LibraryEntry } from '../core/library'
 import { changedSince } from '../core/tessl'
 import type { Paths } from '../core/paths'
@@ -85,6 +86,15 @@ export async function readSkill(folder: string): Promise<SkillFile[]> {
       }
     })
   )
+}
+
+/** What the skill page shows of each file: a link shows its target; a zero byte marks a binary file. */
+export function skillTexts(files: SkillFile[]): SkillText[] {
+  return files.map(({ rel, link, data, resolved }) => {
+    const content = link ? resolved : data
+    const binary = content !== null && content.includes(0)
+    return { path: rel, text: content && !binary ? content.toString('utf8') : null, binary }
+  })
 }
 
 /** SHA-256 over the sorted paths and bytes of `readSkill`, symlink targets included. */

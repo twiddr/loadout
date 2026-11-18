@@ -3,6 +3,7 @@
   import BriefingDialog from './BriefingDialog.svelte'
   import CandidatePage from './CandidatePage.svelte'
   import FixDialog from './FixDialog.svelte'
+  import FixDoneDialog from './FixDoneDialog.svelte'
   import Icon from './Icon.svelte'
   import ForkDialog from './ForkDialog.svelte'
   import IntelPage from './IntelPage.svelte'
@@ -196,6 +197,7 @@
   <BriefingDialog />
   <UpdateDialog bind:dialog={updateDialog} />
   <UpdatePrompt bind:dialog={updatePrompt} onupdate={openUpdate} />
+  <FixDoneDialog />
   <FixDialog
     bind:dialog={tesslDialogs.fix}
     {entry}

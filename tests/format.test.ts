@@ -4,6 +4,8 @@ import type { Entry, Manifest } from '../src/core/ipc'
 import type { Pack } from '../src/core/packs'
 import {
   diffFiles,
+  foldersOf,
+  treeRows,
   gridItems,
   packRemoveText,
   packToggleText,
@@ -12,7 +14,6 @@ import {
   agentCode,
   ago,
   expired,
-  fixLabel,
   formatSize,
   isRunning,
   localDate,
@@ -24,7 +25,6 @@ import {
   scoreText,
   scoreTone,
   serial,
-  showAges,
   sourceGroups,
   sourceLine,
   splitFrontmatter
@@ -284,17 +284,6 @@ describe('formatSize', () => {
   })
 })
 
-describe('fixLabel', () => {
-  test('shows fixed and the age', () => {
-    const now = 10 * 86_400_000
-    expect(fixLabel({ fixedAt: now - 2 * 86_400_000 }, now, true)).toBe('fixed · 2 days ago')
-  })
-  test('shows fixed alone without the age', () => {
-    const now = 10 * 86_400_000
-    expect(fixLabel({ fixedAt: now - 2 * 86_400_000 }, now, false)).toBe('fixed')
-  })
-})
-
 describe('pointsToLog', () => {
   test.each([
     ['review done, see the log', true],
@@ -304,17 +293,6 @@ describe('pointsToLog', () => {
     ['published 0.1.1', false],
     ['up to date', false]
   ])('%s → %s', (text, want) => expect(pointsToLog(text)).toBe(want))
-})
-
-describe('showAges', () => {
-  test.each([
-    [true, false, false, true],
-    [false, true, false, true],
-    [true, true, false, false],
-    [true, false, true, false],
-    [false, true, true, false],
-    [false, false, false, false]
-  ])('review %s fix %s intel %s → %s', (r, f, i, want) => expect(showAges(r, f, i)).toBe(want))
 })
 
 describe('expired', () => {
@@ -557,3 +535,46 @@ describe('packRemoveText', () => {
   })
 })
 const names7 = (): string[] => Array.from({ length: 7 }, (_, i) => `s${i}`)
+
+describe('treeRows', () => {
+  const paths = ['SKILL.md', 'evals/evals.json', 'references/b.md', 'references/a.md', 'ref.md']
+
+  it('lists folders first, then files, closed folders hide their files', () => {
+    expect(treeRows(paths, new Set()).map((r) => r.path)).toEqual([
+      'evals',
+      'references',
+      'SKILL.md',
+      'ref.md'
+    ])
+  })
+
+  it('shows the files of an open folder one level deeper, sorted', () => {
+    const rows = treeRows(paths, new Set(['references']))
+    expect(rows.map((r) => [r.path, r.depth, r.open])).toEqual([
+      ['evals', 0, false],
+      ['references', 0, true],
+      ['references/a.md', 1, false],
+      ['references/b.md', 1, false],
+      ['SKILL.md', 0, false],
+      ['ref.md', 0, false]
+    ])
+    expect(rows[2]).toEqual({
+      path: 'references/a.md',
+      name: 'a.md',
+      depth: 1,
+      folder: false,
+      open: false
+    })
+  })
+
+  it('keeps a deep folder closed until it is opened', () => {
+    expect(treeRows(['a/b/c.md'], new Set(['a'])).map((r) => r.path)).toEqual(['a', 'a/b'])
+  })
+})
+
+describe('foldersOf', () => {
+  it('names the folders that hold a file, outermost first', () => {
+    expect(foldersOf('a/b/c.md')).toEqual(['a', 'a/b'])
+    expect(foldersOf('SKILL.md')).toEqual([])
+  })
+})

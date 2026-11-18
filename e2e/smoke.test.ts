@@ -2004,7 +2004,7 @@ test('saved review: score on the card, REVIEW tab, restart, stale on change', as
     await page.getByLabel('Actions for probe', { exact: true }).click()
     await page.getByRole('button', { name: 'Tessl review' }).click()
     const score = probe.getByRole('button', { name: 'Review probe' })
-    await expect(score).toHaveText('65/100 · just now')
+    await expect(score).toHaveText('65/100')
     expect((await probe.boundingBox())?.height).toBe(before)
     expect(existsSync(saved)).toBe(true)
     await score.click()
@@ -2017,7 +2017,7 @@ test('saved review: score on the card, REVIEW tab, restart, stale on change', as
     app = await launch()
     page = await app.firstWindow()
     const again = page.getByRole('article', { name: 'probe', exact: true })
-    await expect(again.getByRole('button', { name: 'Review probe' })).toHaveText(/^65\/100 · /)
+    await expect(again.getByRole('button', { name: 'Review probe' })).toHaveText('65/100')
 
     appendFileSync(join(home, 'Code', 'Skills', 'probe', 'SKILL.md'), 'One more line.\n')
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].emit('focus'))
@@ -2057,6 +2057,10 @@ test('fix: FIXED on the card, FIX tab, undo, keep, undo blocked after an edit, r
   const skillMd = join(home, 'Code', 'Skills', 'probe', 'SKILL.md')
   const references = join(home, 'Code', 'Skills', 'probe', 'references')
   const saved = join(home, '.loadout', 'fixes', 'probe')
+  // keep.md the fix leaves alone; gone.md the test deletes after the second fix.
+  mkdirSync(references)
+  writeFileSync(join(references, 'keep.md'), '# Keep\n')
+  writeFileSync(join(references, 'gone.md'), 'Gone.\n')
   const app = await _electron.launch({
     args: launchArgs(home),
     env: { ...process.env, ...env } as Record<string, string>
@@ -2073,29 +2077,77 @@ test('fix: FIXED on the card, FIX tab, undo, keep, undo blocked after an edit, r
     const score = probe.getByRole('button', { name: 'Review probe' })
     await page.getByLabel('Actions for probe', { exact: true }).click()
     await page.getByRole('button', { name: 'Tessl review' }).click()
-    await expect(score).toHaveText('90/100 · just now')
+    await expect(score).toHaveText('90/100')
+    // The hover underline takes the score's green, not the card's amber.
+    await score.hover()
+    const [line, underline, green] = await score.evaluate((el) => {
+      const swatch = document.createElement('span')
+      swatch.style.color = 'var(--ok)'
+      document.body.append(swatch)
+      const ok = getComputedStyle(swatch).color
+      swatch.remove()
+      const style = getComputedStyle(el)
+      return [style.textDecorationLine, style.textDecorationColor, ok]
+    })
+    expect(line).toBe('underline')
+    expect(underline).toBe(green)
+    await page.mouse.move(0, 0)
     await runFix()
+    // The fix ended on the LOADOUT page, so the FIXED dialog opened; LATER leaves the card mark.
+    await page.getByRole('dialog', { name: 'FIXED' }).getByRole('button', { name: 'LATER' }).click()
     await expect(score).toBeHidden()
     const fixed = probe.getByRole('button', { name: 'Fix probe' })
-    await expect(fixed).toHaveText('fixed · just now')
+    await expect(fixed).toHaveText('fixed')
     await expect(probe.getByText('see the log')).toBeHidden()
     await fixed.click()
     await expect(page.getByRole('tab', { name: 'Fix' })).toHaveAttribute('aria-selected', 'true')
     const list = page.locator('.fix-files')
-    await expect(list.getByText('SKILL.md')).toBeVisible()
-    await expect(list.locator('li', { hasText: 'references/new.md' })).toContainText('ADDED')
-    await expect(list.locator('li', { hasText: 'SKILL.md' })).toContainText('CHANGED')
+    const files = page.getByRole('region', { name: 'Files' })
+    const listSkill = list.getByRole('button', { name: /SKILL\.md/ })
+    const listNew = list.getByRole('button', { name: /references\/new\.md/ })
+    // FIX shows one file at a time; SKILL.md is picked first.
+    await expect(listSkill).toContainText('CHANGED')
+    await expect(listSkill).toHaveAttribute('aria-current', 'true')
+    await expect(listNew).toContainText('ADDED')
+    await expect(page.locator('.fix-file')).toHaveCount(1)
     await expect(page.getByText('Fixed line.')).toBeVisible()
+    // NOW marks what the fix added.
+    await expect(page.locator('.fix-file ins')).toHaveText(['Fixed line.'])
+    // The tree tags what the fix added and changed.
+    await files.getByRole('button', { name: 'references/' }).click()
+    await expect(files.getByRole('button', { name: 'new.md' })).toContainText('ADDED')
+    await expect(files.getByRole('button', { name: 'SKILL.md' })).toContainText('CHANGED')
+    await expect(files.getByRole('button', { name: 'keep.md' })).not.toContainText(/ADDED|CHANGED/)
+    // A list row picks its file; the tab stays FIX.
+    await listNew.click()
+    await expect(listNew).toHaveAttribute('aria-current', 'true')
+    await expect(files.getByRole('button', { name: 'new.md' })).toHaveAttribute(
+      'aria-current',
+      'true'
+    )
+    await expect(page.getByRole('tab', { name: 'Fix' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByText('New reference.')).toBeVisible()
     await page.getByRole('radio', { name: 'before' }).click()
-    await expect(page.getByText('Fixed line.')).toBeHidden()
     await expect(
       page.getByRole('region', { name: 'references/new.md' }).getByText('Not in this version.')
     ).toBeVisible()
+    // A file the fix did not change, picked in the tree.
+    await files.getByRole('button', { name: 'keep.md' }).click()
+    await expect(page.getByText('The fix did not change this file.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Keep', exact: true })).toBeVisible()
+    await expect(list.locator('[aria-current="true"]')).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: 'Fix' })).toHaveAttribute('aria-selected', 'true')
+    // BRIEFING shows the picked file.
+    await files.getByRole('button', { name: 'new.md' }).click()
+    await page.getByRole('tab', { name: 'Briefing' }).click()
+    await expect(page.locator('.skill-file-note')).toHaveText('references/new.md · read-only')
+    await expect(page.getByText('New reference.')).toBeVisible()
+    await page.getByRole('tab', { name: 'Fix' }).click()
 
     await page.getByRole('button', { name: 'UNDO FIX' }).click()
     await expect(page.getByRole('tab', { name: 'Fix' })).toBeHidden()
     expect(readFileSync(skillMd, 'utf8')).not.toContain('Fixed line.')
-    expect(existsSync(references)).toBe(false)
+    expect(existsSync(join(references, 'new.md'))).toBe(false)
     expect(existsSync(saved)).toBe(false)
     // The card is hidden behind the skill page; the header shows the current review.
     const header = page.locator('.skill-result')
@@ -2103,14 +2155,28 @@ test('fix: FIXED on the card, FIX tab, undo, keep, undo blocked after an edit, r
 
     await runFix()
     await expect(page.getByRole('tab', { name: 'Fix' })).toBeVisible()
-    // BEFORE was picked for the first fix; the new fix opens on AFTER.
-    await page.getByRole('tab', { name: 'Fix' }).click()
-    await expect(page.getByRole('radio', { name: 'after' })).toHaveAttribute('aria-checked', 'true')
+    // BEFORE was picked for the first fix; the new fix opens on NOW.
+    // The fix ended on the skill's own page, so that page opened its FIX tab.
+    await expect(page.getByRole('tab', { name: 'Fix' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('radio', { name: 'now' })).toHaveAttribute('aria-checked', 'true')
     appendFileSync(skillMd, 'My own edit.\n')
+    rmSync(join(references, 'gone.md'))
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].emit('focus'))
     await page.getByRole('tab', { name: 'Fix' }).click()
     await expect(page.getByRole('button', { name: 'UNDO FIX' })).toBeDisabled()
     await expect(page.getByText(/^The skill changed after the fix/)).toBeVisible()
+    // A removed file is in the list, not in the tree; BRIEFING then falls back to SKILL.md.
+    const gone = list.getByRole('button', { name: /references\/gone\.md/ })
+    await expect(gone).toContainText('REMOVED')
+    await expect(files.getByRole('button', { name: 'keep.md' })).toBeVisible()
+    await expect(files.getByRole('button', { name: 'gone.md' })).toHaveCount(0)
+    await gone.click()
+    await page.getByRole('radio', { name: 'before' }).click()
+    await expect(
+      page.getByRole('region', { name: 'references/gone.md' }).getByText('Gone.', { exact: true })
+    ).toBeVisible()
+    await page.getByRole('tab', { name: 'Briefing' }).click()
+    await expect(page.locator('.skill-file-note')).toHaveText('SKILL.md · read-only')
     await page.getByRole('tab', { name: 'Review' }).click()
     await expect(
       page.getByText(/^The skill changed after the last review \(90\/100, /)
@@ -2518,3 +2584,77 @@ function listing(folders: string[]): string[] {
   }
   return rows.sort()
 }
+
+test('skill files: the tree opens a folder and BRIEFING shows the picked file', async () => {
+  const { home, env } = fakeHome()
+  const probeDir = join(home, 'Code', 'Skills', 'probe')
+  mkdirSync(join(probeDir, 'references'))
+  writeFileSync(join(probeDir, 'references', 'guide.md'), '# Guide\n\nRead this first.\n')
+  const long = 'advanced-configuration-troubleshooting-guide-for-every-agent.md'
+  writeFileSync(join(probeDir, 'references', long), 'Long.\n')
+  mkdirSync(join(probeDir, 'scripts'))
+  writeFileSync(join(probeDir, 'scripts', 'run.sh'), 'echo hi\n')
+  const app = await _electron.launch({
+    args: launchArgs(home),
+    env: { ...process.env, ...env } as Record<string, string>
+  })
+  try {
+    const page = await app.firstWindow()
+    await page
+      .getByRole('article', { name: 'probe', exact: true })
+      .getByRole('button', { name: 'probe', exact: true })
+      .click()
+    const files = page.getByRole('region', { name: 'Files' })
+    const note = page.locator('.skill-file-note')
+    const references = files.getByRole('button', { name: 'references/' })
+    await expect(note).toHaveText('SKILL.md · read-only')
+    await expect(references).toHaveAttribute('aria-expanded', 'false')
+    await expect(files.getByRole('button', { name: 'guide.md' })).toBeHidden()
+
+    await references.click()
+    await expect(references).toHaveAttribute('aria-expanded', 'true')
+    // A long name is cut inside its row; the card never grows sideways.
+    await expect(files.getByRole('button', { name: long })).toBeVisible()
+    expect(await files.evaluate((e) => e.scrollWidth - e.clientWidth)).toBe(0)
+    const guide = files.getByRole('button', { name: 'guide.md' })
+    await guide.click()
+    await expect(page.getByRole('heading', { name: 'Guide' })).toBeVisible()
+    await expect(note).toHaveText('references/guide.md · read-only')
+    await expect(guide).toHaveAttribute('aria-current', 'true')
+
+    await files.getByRole('button', { name: 'scripts/' }).click()
+    await files.getByRole('button', { name: 'run.sh' }).click()
+    await expect(page.locator('.skill-file-body pre')).toHaveText('echo hi\n')
+
+    // A tree click on another tab opens BRIEFING.
+    await page.getByRole('tab', { name: 'Review' }).click()
+    await files.getByRole('button', { name: 'SKILL.md' }).click()
+    await expect(page.getByRole('tab', { name: 'Briefing' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    await expect(note).toHaveText('SKILL.md · read-only')
+
+    // Another skill starts at SKILL.md; references/ is still open from the first pick.
+    await files.getByRole('button', { name: 'guide.md' }).click()
+    await page.getByRole('button', { name: 'Back to Loadout' }).click()
+    await page
+      .getByRole('article', { name: 'probe-gh', exact: true })
+      .getByRole('button', { name: 'probe-gh', exact: true })
+      .click()
+    await expect(note).toHaveText('SKILL.md · read-only')
+    await page.getByRole('button', { name: 'Back to Loadout' }).click()
+    await page
+      .getByRole('article', { name: 'probe', exact: true })
+      .getByRole('button', { name: 'probe', exact: true })
+      .click()
+    await expect(note).toHaveText('SKILL.md · read-only')
+    await expect(files.getByRole('button', { name: 'references/' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    )
+  } finally {
+    await app.close()
+    rmSync(home, { recursive: true, force: true })
+  }
+})

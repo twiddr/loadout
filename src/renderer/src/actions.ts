@@ -144,8 +144,13 @@ export async function runFix(entry: Entry): Promise<void> {
   const result = await api.invoke('fix', { skill: entry.name })
   report(result)
   // A fix that changed something shows as FIXED from the next state push; that links to the FIX tab.
-  if (result.ok && !result.changed) setRow(entry.name, 'no changes')
+  if (result.ok && result.files === 0) setRow(entry.name, 'no changes')
   else delete app.rowResult[entry.name]
+  if (!result.ok || result.files === 0) return
+  // The skill's own page opens its FIX tab; any other page gets the FIXED dialog (App.svelte).
+  if (app.page.name === 'skill' && app.page.skill === entry.name)
+    app.page = { ...app.page, tab: 'fix' }
+  else app.fixDone = { skill: entry.name, files: result.files }
 }
 
 export async function undoFix(entry: Entry): Promise<void> {

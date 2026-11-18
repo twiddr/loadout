@@ -9,18 +9,21 @@
     agentCode,
     ago,
     diffFiles,
+    foldersOf,
     formatSize,
     localDate,
     plural,
     scoreText,
     scoreTone,
     serial,
-    splitFrontmatter
+    splitFrontmatter,
+    treeRows
   } from './format'
   import { claudeEnabled, overridesBlock, syncedLoad } from '../../core/synced'
   import CopyBlock from './CopyBlock.svelte'
   import Icon from './Icon.svelte'
-  import { renderMarkdown } from './markdown'
+  import { renderMarkdown, renderMarkdownChanges } from './markdown'
+  import { wordChanges } from '../../core/changes'
   import Notice from './Notice.svelte'
   import Rank from './Rank.svelte'
   import SkillMenu from './SkillMenu.svelte'
@@ -86,7 +89,6 @@
       return ['github.com', s.owner, s.repo, s.subpath].filter(Boolean).join('/')
     return [s.workspace, s.plugin, s.subpath].filter(Boolean).join('/')
   })
-  const parts = $derived(detail?.skillMd != null ? splitFrontmatter(detail.skillMd) : null)
   const isGithub = $derived(entry?.source.type === 'github')
   const sourceCheck = $derived(entry ? lib.checks[sourceKey(entry.source) ?? ''] : undefined)
   const ready = $derived(sourceCheck?.state === 'ready')
@@ -136,10 +138,12 @@
   const savedReview = $derived(detail?.review ?? null)
   const noTessl = $derived(lib.startup.tools.tessl === null)
   const savedFix = $derived(detail?.fix ?? null)
-  // BEFORE holds for one fix only: a new fix, or another skill, opens on AFTER.
+  // BEFORE holds for one fix only: a new fix, or another skill, opens on NOW.
   const fixKey = $derived(savedFix ? `${skill} ${savedFix.fixedAt}` : null)
   let beforeOf = $state<string | null>(null)
-  const fixSide = $derived(fixKey !== null && beforeOf === fixKey ? 'before' : 'after')
+  const fixSide = $derived(fixKey !== null && beforeOf === fixKey ? 'before' : 'now')
+  // The space after a removed word; a literal space before {:else} is trimmed.
+  const space = ' '
   const fixTag = { added: 'ADDED', changed: 'CHANGED', removed: 'REMOVED' } as const
   const headline = $derived(
     !sourceCheck
@@ -156,6 +160,43 @@
         : null
   )
   const oldest = $derived(detail?.history?.at(-1)?.hash)
+
+  // The picked file and the open folders belong to one skill; another skill starts at SKILL.md.
+  let view = $state<{ skill: string; picked: string; open: string[] }>({
+    skill: '',
+    picked: 'SKILL.md',
+    open: []
+  })
+  const own = $derived(view.skill === skill ? view : { skill, picked: 'SKILL.md', open: [] })
+  const pickedPath = $derived(own.picked)
+  const texts = $derived(detail?.texts ?? [])
+  const rows = $derived(
+    treeRows(
+      texts.map((t) => t.path),
+      new Set(own.open)
+    )
+  )
+  /** BRIEFING shows the picked file while the folder holds it, else SKILL.md. */
+  const shownText = $derived(
+    pickedPath === 'SKILL.md' ? undefined : texts.find((t) => t.path === pickedPath)
+  )
+
+  const fixFile = $derived(savedFix?.files.find((f) => f.path === pickedPath))
+  /** A file the fix did not change, picked in the tree while FIX shows. */
+  const unchanged = $derived(
+    savedFix && !fixFile ? texts.find((t) => t.path === pickedPath) : undefined
+  )
+  const fixChange = $derived(new Map(savedFix?.files.map((f) => [f.path, f.change]) ?? []))
+
+  function pickFile(path: string): void {
+    view = { skill, picked: path, open: [...new Set([...own.open, ...foldersOf(path)])] }
+    if (shownTab !== 'briefing' && shownTab !== 'fix') pick('briefing')
+  }
+
+  function toggleFolder(path: string): void {
+    const open = own.open.includes(path) ? own.open.filter((p) => p !== path) : [...own.open, path]
+    view = { skill, picked: own.picked, open }
+  }
 
   function pick(next: Tab): void {
     app.page = { name: 'skill', skill, tab: next, from }
@@ -203,6 +244,41 @@
     5: 'The source folder is gone, so Claude Code loads only the synced copy.'
   } as const
 </script>
+
+{#snippet fileView(path: string, text: string | null, binary: boolean)}
+  {#if binary}
+    <p class="muted">Binary file, not shown.</p>
+  {:else if text === null}
+    <p class="muted">Loadout cannot read this file.</p>
+  {:else if path === 'SKILL.md'}
+    {@const split = splitFrontmatter(text)}
+    {#if split.fields.length > 0}
+      <div class="frontmatter">
+        {#each split.fields as [key, value], i (i)}
+          <div>
+            <span class="fm-key">{key}:</span> <span class="fm-value">{value}</span>
+          </div>
+        {/each}
+      </div>
+    {/if}
+    <div class="md">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes raw HTML -->
+      {@html renderMarkdown(split.body)}
+    </div>
+  {:else if path.endsWith('.md')}
+    <div class="md">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes raw HTML -->
+      {@html renderMarkdown(text)}
+    </div>
+  {:else}
+    <pre class="fix-text">{text}</pre>
+  {/if}
+{/snippet}
+
+{#snippet wordMarks(before: string, after: string)}
+  {#each wordChanges(before, after) as part, i (i)}{#if part.kind === 'add'}<ins>{part.text}</ins
+      >{:else if part.kind === 'del'}<del>{part.text}</del>{space}{:else}{part.text}{/if}{/each}
+{/snippet}
 
 {#if entry}
   <div class="skill-page">
@@ -384,7 +460,9 @@
                 : 'tessl review'
               : shownTab === 'fix'
                 ? `before ~/.loadout/fixes/${entry.name}`
-                : 'SKILL.md · read-only'}</span
+                : shownTab === 'briefing'
+                  ? `${shownText?.path ?? 'SKILL.md'} · read-only`
+                  : 'SKILL.md · read-only'}</span
           >
         </div>
         {#if shownTab === 'fix' && savedFix}
@@ -392,7 +470,7 @@
           <div class="fix-top">
             <span>Fixed {ago(savedFix.fixedAt, app.now)}</span>
             <div class="fix-switch" role="radiogroup" aria-label="Version">
-              {#each ['before', 'after'] as const as side (side)}
+              {#each ['before', 'now'] as const as side (side)}
                 <button
                   role="radio"
                   class="small"
@@ -517,15 +595,28 @@
               <ul class="fix-files">
                 {#each savedFix.files as file, i (i)}
                   <li>
-                    <span class="fix-tag {file.change}">{fixTag[file.change]}</span>{file.path}
+                    <button
+                      class="tree-row"
+                      aria-current={file.path === pickedPath ? 'true' : undefined}
+                      onclick={() => pickFile(file.path)}
+                      ><span class="fix-tag {file.change}">{fixTag[file.change]}</span
+                      >{file.path}</button
+                    >
                   </li>
                 {/each}
               </ul>
-              {#each savedFix.files as file, i (i)}
+              <!-- One file at a time: the picked file, with BEFORE and AFTER. -->
+              {#if fixFile}
+                {@const file = fixFile}
                 {@const text = fixSide === 'before' ? file.before : file.after}
                 {@const absent =
                   (fixSide === 'before' && file.change === 'added') ||
-                  (fixSide === 'after' && file.change === 'removed')}
+                  (fixSide === 'now' && file.change === 'removed')}
+                <!-- NOW marks what the fix added and removed in a changed file. -->
+                {@const was =
+                  fixSide === 'now' && file.change === 'changed' && !file.binary
+                    ? file.before
+                    : null}
                 <section class="fix-file" aria-label={file.path}>
                   <h3 class="fix-file-name">{file.path}</h3>
                   {#if absent}
@@ -534,29 +625,55 @@
                     <p class="muted">Binary file, not shown.</p>
                   {:else if file.path === 'SKILL.md'}
                     {@const split = splitFrontmatter(text)}
+                    {@const old = was === null ? null : splitFrontmatter(was)}
                     {#if split.fields.length > 0}
                       <div class="frontmatter">
                         {#each split.fields as [key, value], j (j)}
+                          {@const oldValue = old?.fields.find(([k]) => k === key)?.[1]}
                           <div>
-                            <span class="fm-key">{key}:</span> <span class="fm-value">{value}</span>
+                            <span class="fm-key">{key}:</span>
+                            <span class="fm-value"
+                              >{#if old === null}{value}{:else if oldValue === undefined}<ins
+                                  >{value}</ins
+                                >{:else}{@render wordMarks(oldValue, value)}{/if}</span
+                            >
+                          </div>
+                        {/each}
+                        {#each old?.fields.filter(([k]) => !split.fields.some(([n]) => n === k)) ?? [] as [key, value], j (j)}
+                          <div>
+                            <del
+                              ><span class="fm-key">{key}:</span>
+                              <span class="fm-value">{value}</span></del
+                            >
                           </div>
                         {/each}
                       </div>
                     {/if}
                     <div class="md">
                       <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes raw HTML -->
-                      {@html renderMarkdown(split.body)}
+                      {@html old === null
+                        ? renderMarkdown(split.body)
+                        : renderMarkdownChanges(old.body, split.body)}
                     </div>
                   {:else if file.path.endsWith('.md')}
                     <div class="md">
                       <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes raw HTML -->
-                      {@html renderMarkdown(text)}
+                      {@html was === null ? renderMarkdown(text) : renderMarkdownChanges(was, text)}
                     </div>
                   {:else}
-                    <pre class="fix-text">{text}</pre>
+                    <pre class="fix-text">{#if was === null}{text}{:else}{@render wordMarks(
+                          was,
+                          text
+                        )}{/if}</pre>
                   {/if}
                 </section>
-              {/each}
+              {:else if unchanged}
+                <section class="fix-file" aria-label={unchanged.path}>
+                  <h3 class="fix-file-name">{unchanged.path}</h3>
+                  <p class="muted">The fix did not change this file.</p>
+                  {@render fileView(unchanged.path, unchanged.text, unchanged.binary)}
+                </section>
+              {/if}
             {/if}
           {:else if shownTab === 'history'}
             <ul class="history">
@@ -570,20 +687,10 @@
             {#if detail.git?.shallow && oldest}
               <p class="muted">Shallow clone: history starts at {oldest}.</p>
             {/if}
-          {:else if parts}
-            {#if parts.fields.length > 0}
-              <div class="frontmatter">
-                {#each parts.fields as [key, value], i (i)}
-                  <div>
-                    <span class="fm-key">{key}:</span> <span class="fm-value">{value}</span>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-            <div class="md">
-              <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes raw HTML -->
-              {@html renderMarkdown(parts.body)}
-            </div>
+          {:else if shownText}
+            {@render fileView(shownText.path, shownText.text, shownText.binary)}
+          {:else if detail.skillMd !== null}
+            {@render fileView('SKILL.md', detail.skillMd, false)}
           {:else}
             {#if statusText}<p class="muted">{statusText}</p>{/if}
           {/if}
@@ -719,16 +826,36 @@
             <div class="spec-row"><span>SIZE</span><span>{formatSize(detail.size)}</span></div>
           {/if}
         </div>
-        <div class="side-card">
+        <section class="side-card" aria-label="Files">
           <div class="side-title"><span>FILES</span></div>
-          {#each detail?.files ?? [] as file (file.name)}
-            <span class="file-row"
-              ><span class="file-mark">{file.folder ? '▸' : '▪'}</span>{file.name}{file.folder
-                ? '/'
-                : ''}</span
-            >
-          {/each}
-        </div>
+          <div class="file-tree">
+            {#each rows as row (row.path)}
+              {#if row.folder}
+                <button
+                  class="tree-row"
+                  style:padding-left="{6 + row.depth * 18}px"
+                  aria-expanded={row.open}
+                  onclick={() => toggleFolder(row.path)}
+                  ><Icon name={row.open ? 'chevron-down' : 'chevron-right'} size={12} /><span
+                    class="tree-name">{row.name}/</span
+                  ></button
+                >
+              {:else}
+                <button
+                  class="tree-row"
+                  style:padding-left="{6 + row.depth * 18}px"
+                  aria-current={row.path === pickedPath ? 'true' : undefined}
+                  onclick={() => pickFile(row.path)}
+                  ><span class="tree-gap"></span><span class="tree-name">{row.name}</span
+                  >{#if fixChange.get(row.path) === 'added' || fixChange.get(row.path) === 'changed'}<span
+                      class="fix-tag tree-tag {fixChange.get(row.path)}"
+                      >{fixTag[fixChange.get(row.path) ?? 'changed']}</span
+                    >{/if}</button
+                >
+              {/if}
+            {/each}
+          </div>
+        </section>
         {#if claudeAi !== null}
           {@const copy = detail?.syncedCopy}
           <section class="side-card claude-ai" aria-label="claude.ai">

@@ -125,11 +125,20 @@ export interface FixView {
   files: FixFile[]
 }
 
+/** One file of a skill folder for the viewer; `text` is null for a binary or unreadable file. */
+export interface SkillText {
+  path: string
+  text: string | null
+  binary: boolean
+}
+
 export interface SkillDetail {
   /** Null when the target or SKILL.md is missing. */
   skillMd: string | null
   files: { name: string; folder: boolean }[]
   size: { bytes: number; files: number } | null
+  /** Every file `readSkill` reads, sorted by path; empty when the folder cannot be read. */
+  texts: SkillText[]
   /** `github` only; null when a query failed. */
   git: { branch: string; commit: string; shallow: boolean } | null
   /** `github` only; null when the query failed. */
@@ -307,7 +316,7 @@ export interface LoadoutApi {
     channel: 'review',
     payload: { skill: string }
   ): Promise<Result<{ score: number | null; saved: boolean }>>
-  invoke(channel: 'fix', payload: { skill: string }): Promise<Result<{ changed: boolean }>>
+  invoke(channel: 'fix', payload: { skill: string }): Promise<Result<{ files: number }>>
   invoke(channel: 'fix-undo', payload: { skill: string }): Promise<Result>
   invoke(channel: 'fix-keep', payload: { skill: string }): Promise<Result>
   invoke(

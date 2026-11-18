@@ -53,11 +53,6 @@ export function scoreTone(score: number | null): 'good' | 'fair' | 'poor' | null
   return score >= 40 ? 'fair' : 'poor'
 }
 
-/** `fixed · 2 days ago`, or `fixed` without the age; the card upper-cases it in CSS. */
-export function fixLabel(fix: { fixedAt: number }, now: number, withAge: boolean): string {
-  return withAge ? `fixed · ${ago(fix.fixedAt, now)}` : 'fixed'
-}
-
 /** A row text for an action that still runs (`reviewing…`, `checking…`). */
 export function isRunning(text: string): boolean {
   return text.endsWith('…')
@@ -69,11 +64,6 @@ export const RESULT_TTL_MS = 15 * 60_000
 /** A row text that sends the reader to the Log (`see the log`, `(see Log)`). */
 export function pointsToLog(text: string): boolean {
   return /see the log|\(see log\)/i.test(text)
-}
-
-/** The card top line shows an age only when the review score, the fix or the update is alone on it. */
-export function showAges(review: boolean, fix: boolean, intel: boolean): boolean {
-  return [review, fix, intel].filter(Boolean).length === 1
 }
 
 /** A finished row text set at `at` has stayed its 15 min; a running one never expires. */
@@ -461,4 +451,46 @@ export function diffFiles(text: string): DiffFile[] {
     file.lines.push({ line, kind })
   }
   return files
+}
+
+/** One visible row of the FILES tree; a folder's path has no trailing slash. */
+export interface TreeRow {
+  path: string
+  name: string
+  depth: number
+  folder: boolean
+  open: boolean
+}
+
+const byName = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+
+/** The visible tree rows: at each level folders first, then files, each by name; only open folders show what they hold. */
+export function treeRows(paths: string[], open: ReadonlySet<string>): TreeRow[] {
+  const rows: TreeRow[] = []
+  const level = (prefix: string, depth: number): void => {
+    const inside = paths
+      .filter((p) => p.startsWith(prefix))
+      .map((p) => p.slice(prefix.length).split('/'))
+    const folders = [...new Set(inside.filter((s) => s.length > 1).map((s) => s[0]))].sort(byName)
+    const files = inside
+      .filter((s) => s.length === 1)
+      .map((s) => s[0])
+      .sort(byName)
+    for (const name of folders) {
+      const path = prefix + name
+      rows.push({ path, name, depth, folder: true, open: open.has(path) })
+      if (open.has(path)) level(`${path}/`, depth + 1)
+    }
+    for (const name of files) {
+      rows.push({ path: prefix + name, name, depth, folder: false, open: false })
+    }
+  }
+  level('', 0)
+  return rows
+}
+
+/** The folders that hold a file, outermost first. */
+export function foldersOf(path: string): string[] {
+  const parts = path.split('/').slice(0, -1)
+  return parts.map((_, i) => parts.slice(0, i + 1).join('/'))
 }
