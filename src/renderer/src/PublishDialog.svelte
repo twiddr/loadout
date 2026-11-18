@@ -2,9 +2,11 @@
   import { manifestAddArgs, manifestCommitArgs, publishCommitMessage } from '../../core/git'
   import type { Bump, Manifest } from '../../core/ipc'
   import { displayPath } from '../../core/paths'
+  import { bumpVersion } from '../../core/tessl'
   import { api } from './api'
   import { publishVisibility } from './format'
   import Icon from './Icon.svelte'
+  import Tip from './Tip.svelte'
 
   let {
     dialog = $bindable(),
@@ -125,10 +127,13 @@
       <span class="label" id={`publish-bump-label-${id}`}>Version bump</span>
       <div class="seg segmented" role="radiogroup" aria-labelledby={`publish-bump-label-${id}`}>
         {#each ['patch', 'minor', 'major'] as const as option (option)}
-          <label>
-            <input type="radio" name="bump" value={option} bind:group={bump} />
-            {option}
-          </label>
+          {@const next = manifest ? bumpVersion(manifest.version, option) : null}
+          <Tip text={next ? `${manifest?.version} → ${next}` : ''}>
+            <label>
+              <input type="radio" name="bump" value={option} bind:group={bump} />
+              {option}
+            </label>
+          </Tip>
         {/each}
       </div>
     </div>

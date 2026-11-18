@@ -5,6 +5,7 @@
   import { api } from './api'
   import { INSTALL_HINTS } from './format'
   import Notice from './Notice.svelte'
+  import Tip from './Tip.svelte'
   import { app, report } from './state.svelte'
 
   let { state: lib, dialog = $bindable() }: { state: State; dialog?: HTMLDialogElement } = $props()
@@ -209,8 +210,8 @@
             <div class="settings-row">
               <span class="settings-name">{name}</span>
               {#if tool}
-                <span class="grow mono muted" title={tool.path}
-                  >{displayPath(tool.path, lib.home)}</span
+                <Tip text={tool.path} overflow
+                  ><span class="grow mono muted">{displayPath(tool.path, lib.home)}</span></Tip
                 >
                 <span class="mono">{versionNumber(tool.version)}</span>
               {:else}

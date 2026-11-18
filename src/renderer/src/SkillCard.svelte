@@ -8,14 +8,17 @@
     ago,
     fixLabel,
     isRunning,
+    pointsToLog,
     scoreText,
     scoreTone,
     serial,
+    showAges,
     sourceLine
   } from './format'
   import Icon from './Icon.svelte'
   import Rank from './Rank.svelte'
   import SkillMenu from './SkillMenu.svelte'
+  import Tip from './Tip.svelte'
   import { app } from './state.svelte'
 
   let {
@@ -35,10 +38,18 @@
   )
 
   const row = $derived(app.rowResult[entry.name])
-  const reviewing = $derived(row === 'reviewing…')
-  const fixing = $derived(row === 'fixing…')
   const saved = $derived(lib.reviews[entry.name])
   const fix = $derived(lib.fixes[entry.name])
+  // The ages show only when the score, the fix or the update is alone on the top line.
+  const ages = $derived(showAges(saved !== undefined, fix !== undefined, ready))
+  // Two lines each: what the mark is, then what a click does.
+  const reviewTip = $derived(
+    saved ? `Tessl review score, ${ago(saved.reviewedAt, app.now)}.\nClick to read the review.` : ''
+  )
+  const fixTip = $derived(
+    fix ? `Tessl fix, ${ago(fix.fixedAt, app.now)}.\nClick to keep or undo it.` : ''
+  )
+  const INTEL_TIP = 'An update is available.\nClick to open the skill.'
   const manifest = $derived(lib.manifests[entry.name])
   // Files newer than the manifest: changed since the last publish (ADR 20261111-changed-since-publish).
   const edited = $derived(lib.edited[entry.name] !== undefined)
@@ -86,41 +97,33 @@
 >
   <div class="card-top">
     <span class="card-top-id"
-      ><span class="card-serial">{serial(index)}{stowed ? ' · STOWED' : ''}</span>
-      {#if reviewing}
-        <span class="card-status running">reviewing…</span>
-      {:else if saved}
-        <button
-          class="card-review"
-          aria-label={`Review ${entry.name}`}
-          title={`Tessl review of ${entry.name}`}
-          onclick={() => open('review')}
-          ><span class="score {scoreTone(saved.score)}">{scoreText(saved.score)}</span> · {ago(
-            saved.reviewedAt,
-            app.now
-          )}</button
-        >
+      ><span class="card-serial">{serial(index)}</span>
+      {#if saved}
+        <Tip text={reviewTip}>
+          <button
+            class="card-review"
+            aria-label={`Review ${entry.name}`}
+            onclick={() => open('review')}
+            ><span class="score {scoreTone(saved.score)}">{scoreText(saved.score)}</span
+            >{#if ages}{` · ${ago(saved.reviewedAt, app.now)}`}{/if}</button
+          >
+        </Tip>
       {/if}
-      {#if fixing}
-        <span class="card-status running">fixing…</span>
-      {:else if fix}
-        <button
-          class="card-review"
-          aria-label={`Fix ${entry.name}`}
-          title={`Tessl fix of ${entry.name}: keep or undo`}
-          onclick={() => open('fix')}>{fixLabel(fix, app.now)}</button
-        >
-      {/if}
-      {#if row && !reviewing && !fixing}
-        <span class="card-status" class:running={isRunning(row)} title={row}>{row}</span>
+      {#if fix}
+        <Tip text={fixTip}>
+          <button class="card-review" aria-label={`Fix ${entry.name}`} onclick={() => open('fix')}
+            >{fixLabel(fix, app.now, ages)}</button
+          >
+        </Tip>
       {/if}
       {#if ready}
-        <button
-          class="small amber card-intel"
-          aria-label={`Intel for ${entry.name}`}
-          title={`Intel for ${entry.name}`}
-          onclick={() => open()}>↑ INTEL</button
-        >
+        <Tip text={INTEL_TIP}>
+          <button
+            class="small amber card-intel"
+            aria-label={`Intel for ${entry.name}`}
+            onclick={() => open()}>↑ INTEL</button
+          >
+        </Tip>
       {/if}
     </span>
     <span class="card-top-end">
@@ -150,7 +153,7 @@
           >
         </span>
       {/if}
-      <Rank count={entry.enabledFor.length} size={18} />
+      <Rank count={entry.enabledFor.length} size={18} end />
     </span>
   </div>
   <div class="card-main">
@@ -159,7 +162,7 @@
     >
     <div class="card-id">
       <button class="card-name" onclick={() => open()}>{entry.name}</button>
-      <span class="card-path" title={path}>{path}</span>
+      <Tip text={path} overflow><span class="card-path">{path}</span></Tip>
     </div>
   </div>
   {#if entry.status === 'missing'}
@@ -170,17 +173,33 @@
   <div class="card-foot">
     {#each agents as agent (agent.id)}
       {@const on = entry.enabledFor.includes(agent.id)}
-      <label class="toggle">
-        <input
-          type="checkbox"
-          aria-label={`${entry.name} ${agent.label}`}
-          checked={on}
-          disabled={lib.busy !== null || (entry.status !== 'ok' && !on)}
-          onchange={(e) => toggle(entry.name, agent.id, e.currentTarget)}
-        />
-        <span>{agentCode(agent)}</span>
-      </label>
+      <Tip text={`${agent.label}: ${on ? 'deployed' : 'not deployed'}`} place="above">
+        <label class="toggle">
+          <input
+            type="checkbox"
+            aria-label={`${entry.name} ${agent.label}`}
+            checked={on}
+            disabled={lib.busy !== null || (entry.status !== 'ok' && !on)}
+            onchange={(e) => toggle(entry.name, agent.id, e.currentTarget)}
+          />
+          <span>{agentCode(agent)}</span>
+        </label>
+      </Tip>
     {/each}
+    {#if row && pointsToLog(row)}
+      <Tip text={`${row}\nClick to open the Log.`}>
+        <button
+          class="card-result warn"
+          aria-label={`Open the Log: ${row}`}
+          onclick={() => (app.page = { name: 'log' })}
+          ><Icon name="triangle-alert" size={12} /><span>{row}</span></button
+        >
+      </Tip>
+    {:else if row}
+      <Tip text={row} overflow
+        ><span class="card-result" class:running={isRunning(row)}>{row}</span></Tip
+      >
+    {/if}
     <span class="spacer"></span>
     {#if menu}<SkillMenu {entry} state={lib} />{/if}
   </div>

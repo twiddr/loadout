@@ -21,6 +21,24 @@ export function recheckMsFrom(env: NodeJS.ProcessEnv): number {
   return ms > 0 && ms <= 2_147_483_647 ? ms : 20_000
 }
 
+/** Tessl's auto-update interval; `0` turns the update off for that call. */
+export const AUTO_UPDATE_OFF = 'TESSL_AUTO_UPDATE_INTERVAL_MINUTES'
+
+/** A tool's version: the first line of `--version`. A non-zero exit, or the deadline (code null), means the tool does not run. */
+export async function toolVersion(
+  path: string,
+  env: NodeJS.ProcessEnv,
+  cwd: string
+): Promise<string | null> {
+  const result = await run(path, ['--version'], { env, cwd, deadlineMs: 5000 })
+  return result.code === 0
+    ? (result.stdout
+        .split('\n')[0]
+        ?.trim()
+        .replace(/^git version /, '') ?? '')
+    : null
+}
+
 export interface ResolvedPath {
   path: string
   source: Startup['pathSource']
@@ -92,23 +110,14 @@ export async function startupCheck(
   fallbackDirs: string[] = FALLBACK_DIRS
 ): Promise<{ startup: Startup; env: NodeJS.ProcessEnv }> {
   const resolved = await resolvePath(env.SHELL, env.PATH ?? '', paths.home, fallbackDirs)
-  const toolEnv = { ...env, PATH: resolved.path }
+  // A call Loadout can kill must never start a Tessl update; see src/main/tesslupdate.ts.
+  const toolEnv = { ...env, PATH: resolved.path, [AUTO_UPDATE_OFF]: '0' }
   // Loadout's own folder, never the folder the app was started from; ensureLoadout made it.
   const cwd = paths.loadout
 
   // The version calls and `tessl whoami` run side by side; each takes up to a second.
   const names = ['git', 'tessl', ...config.agents.map((agent) => agent.command), 'brew']
   const found = await Promise.all(names.map((name) => findTool(name, resolved.path)))
-  // A non-zero exit, or the deadline (code null), means the tool does not run.
-  const versionOf = async (path: string): Promise<string | null> => {
-    const result = await run(path, ['--version'], { env: toolEnv, cwd, deadlineMs: 5000 })
-    return result.code === 0
-      ? (result.stdout
-          .split('\n')[0]
-          ?.trim()
-          .replace(/^git version /, '') ?? '')
-      : null
-  }
   const tesslPath = found[names.indexOf('tessl')]
   const whoami = async (): Promise<string | null> => {
     if (!tesslPath) return null
@@ -122,7 +131,9 @@ export async function startupCheck(
   const [versions, tesslUser] = await Promise.all([
     Promise.all(
       found.map((path, i) =>
-        path && names[i] !== 'brew' ? versionOf(path) : Promise.resolve<string | null>('')
+        path && names[i] !== 'brew'
+          ? toolVersion(path, toolEnv, cwd)
+          : Promise.resolve<string | null>('')
       )
     ),
     whoami()

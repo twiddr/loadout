@@ -93,6 +93,8 @@ export interface State {
   synced: Synced | null
   /** A newer Loadout release a check found this session; never cleared until a restart, never saved. */
   appUpdate: AppUpdate | null
+  /** True while the launch's Tessl update call runs and Tessl has started a real update; never saved. */
+  tesslUpdating: boolean
 }
 
 /** The Loadout folders Settings can reveal; main maps each key to its own path. */
@@ -231,6 +233,7 @@ export type Action =
   | 'fork'
   | 'recruit'
   | 'app-update'
+  | 'tessl-update'
 
 export interface LogEvent {
   runId: number

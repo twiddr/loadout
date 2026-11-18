@@ -2,6 +2,7 @@
   import type { Entry, State } from '../../core/ipc'
   import AddDialog from './AddDialog.svelte'
   import Icon from './Icon.svelte'
+  import Tip from './Tip.svelte'
   import { check, relocate, remove, reveal, review, update, updateLabel } from './actions'
   import { openTesslDialog } from './state.svelte'
 
@@ -30,13 +31,14 @@
     >ACTIONS<span class="divider"></span><Icon name="chevron-down" size={12} /></button
   >
 {:else}
-  <button
-    class="icon"
-    aria-label={`Actions for ${entry.name}`}
-    title={`Actions for ${entry.name}`}
-    popovertarget={`menu-${id}`}
-    style:anchor-name={`--menu-${id}`}><Icon name="ellipsis" /></button
-  >
+  <Tip text="Actions" place="above" end>
+    <button
+      class="icon"
+      aria-label={`Actions for ${entry.name}`}
+      popovertarget={`menu-${id}`}
+      style:anchor-name={`--menu-${id}`}><Icon name="ellipsis" /></button
+    >
+  </Tip>
 {/if}
 <div popover id={`menu-${id}`} class="menu-pop float" style:position-anchor={`--menu-${id}`}>
   {#if entry.source.type === 'github' || entry.source.type === 'tessl'}
@@ -54,11 +56,9 @@
       onclick={() => update(entry, lib.entries)}
       disabled={busy || noTool}>{updateLabel(source, lib.entries)}</button
     >
-    {#if labeled}
-      {@const name =
-        source.type === 'github'
-          ? `${source.owner}/${source.repo}`
-          : `${source.workspace}/${source.plugin}`}
+    <!-- A Registry plugin holds one skill, so only a Link can have more to recruit. -->
+    {#if labeled && source.type === 'github'}
+      {@const name = `${source.owner}/${source.repo}`}
       <button
         popovertarget={`menu-${id}`}
         popovertargetaction="hide"
@@ -130,6 +130,6 @@
     >
   {/if}
 </div>
-{#if labeled && (entry.source.type === 'github' || entry.source.type === 'tessl')}
-  <AddDialog kind={entry.source.type} {busy} bind:this={add} />
+{#if labeled && entry.source.type === 'github'}
+  <AddDialog kind="github" {busy} bind:this={add} />
 {/if}

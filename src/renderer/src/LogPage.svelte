@@ -5,6 +5,7 @@
   import Icon from './Icon.svelte'
   import Notice from './Notice.svelte'
   import PageHeader from './PageHeader.svelte'
+  import Tip from './Tip.svelte'
   import { app } from './state.svelte'
 
   let { state: status, eyebrow }: { state: State; eyebrow: string | null } = $props()
@@ -89,13 +90,14 @@
           {#if run.command !== undefined}<span class="run-prompt">$ </span>{run.command}{/if}
         </span>
         {#if c}<span class="run-chip {c.kind}">{c.text}</span>{/if}
-        <button
-          class="icon small-icon"
-          aria-label={`Copy run ${run.runId}`}
-          title="Copy the command and its output"
-          onclick={() => copy(run)}
-          ><Icon name={copied === run.runId ? 'check' : 'copy'} size={13} /></button
-        >
+        <Tip text="Copy the command and its output" end>
+          <button
+            class="icon small-icon"
+            aria-label={`Copy run ${run.runId}`}
+            onclick={() => copy(run)}
+            ><Icon name={copied === run.runId ? 'check' : 'copy'} size={13} /></button
+          >
+        </Tip>
       </div>
       {#if run.lines.length > 0}
         <div class="run-lines">

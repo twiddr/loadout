@@ -841,6 +841,21 @@ button.small-icon {
   text-transform: uppercase;
   color: var(--fg-2);
 }
+/* The launch's Tessl update call is updating Tessl: a hard amber flash, left of the version. */
+.tool-updating {
+  color: var(--amber-text);
+  animation: tool-updating-flash 1s steps(2, jump-none) infinite;
+}
+@keyframes tool-updating-flash {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-updating {
+    animation: none;
+  }
+}
 .swatch {
   width: 8px;
   height: 8px;
@@ -868,6 +883,11 @@ button.small-icon {
 }
 .system .tip {
   position: static;
+  flex: 1;
+}
+/* The info mark sits at the right edge, in line with the versions above it. */
+.system .tip > svg {
+  margin-left: auto;
 }
 .squad .tip-text {
   top: auto;
@@ -3314,8 +3334,8 @@ button.small.amber-outline {
   white-space: pre-line;
   line-height: 1.4;
 }
-/* The status and the saved review score sit on the serial line, so the card never grows. */
-.card-status,
+/* The saved review score and fix sit on the serial line; the last result sits in the foot. */
+.card-result,
 button.card-review {
   min-width: 0;
   overflow: hidden;
@@ -3340,9 +3360,35 @@ button.card-review:hover:not(:disabled) {
   background: transparent;
   text-decoration: underline;
 }
-.card-status.running {
+.card-result.running {
   color: color-mix(in srgb, var(--ok) 70%, transparent);
   animation: status-pulse 1.6s ease-in-out infinite;
+}
+/* The result shrinks with an ellipsis before it pushes the menu out of the card. */
+.card-foot > .tip:has(> .card-result) {
+  min-width: 0;
+  margin-left: 6px;
+}
+button.card-result.warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+button.card-result.warn > svg {
+  flex: none;
+}
+button.card-result.warn > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+button.card-result.warn:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
 }
 @keyframes status-pulse {
   50% {
@@ -3350,7 +3396,7 @@ button.card-review:hover:not(:disabled) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card-status.running {
+  .card-result.running {
     animation: none;
   }
 }
@@ -4419,4 +4465,68 @@ button.brief-skip {
   border-color: transparent;
   background: transparent;
   color: var(--muted);
+}
+
+/*
+ * Tip.svelte: the tip is a popover in the top layer, anchored to its element, so a card's clip-path
+ * or a scrolling column never cuts it, and it flips to the other side at the window edge. Last in
+ * the file, so it wins over the older context rules for `.tip-text` (on cards, in the Recon table).
+ */
+.tip.anchored {
+  anchor-name: --tip;
+  anchor-scope: --tip;
+}
+.tip.anchored > .tip-text {
+  position: fixed;
+  position-anchor: --tip;
+  inset: auto;
+  top: anchor(bottom);
+  bottom: auto;
+  left: anchor(left);
+  right: auto;
+  margin: 4px 0 0;
+  width: max-content;
+  max-width: 280px;
+  white-space: pre-line;
+  line-height: 1.4;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  overflow: visible;
+  position-try-fallbacks: flip-block, flip-inline;
+}
+.tip.anchored > .tip-text::before {
+  content: attr(data-tip);
+}
+.tip.anchored.end > .tip-text {
+  left: auto;
+  right: anchor(right);
+}
+.tip.anchored.above > .tip-text {
+  top: auto;
+  bottom: anchor(top);
+  margin: 0 0 4px;
+}
+.tip.anchored.side > .tip-text {
+  top: anchor(center);
+  left: anchor(right);
+  translate: 0 -50%;
+  margin: 0 0 0 8px;
+}
+/* A tip on cut text: the wrapper shrinks with its column, so the text keeps its ellipsis. */
+.tip.anchored.fill {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+}
+/* A tool's path in Settings keeps pushing its version to the right edge. */
+.settings-row > .tip.fill {
+  flex: 1;
+}
+/* A menu item with a tip keeps the menu's full width. */
+.menu-pop > .tip.anchored {
+  display: flex;
 }

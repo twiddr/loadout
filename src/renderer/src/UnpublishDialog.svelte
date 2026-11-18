@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Manifest } from '../../core/ipc'
   import { displayPath } from '../../core/paths'
+  import Tip from './Tip.svelte'
 
   let {
     dialog = $bindable(),
@@ -35,7 +36,7 @@
     </p>
     <div class="publish-grid">
       <span class="label">Plugin</span>
-      <span class="publish-visibility plugin" title={plugin}>{plugin}</span>
+      <Tip text={plugin} overflow><span class="publish-visibility plugin">{plugin}</span></Tip>
       <span class="label">Removes</span>
       <span class="publish-visibility">every version Loadout can find</span>
     </div>

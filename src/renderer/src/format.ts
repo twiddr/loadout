@@ -53,14 +53,32 @@ export function scoreTone(score: number | null): 'good' | 'fair' | 'poor' | null
   return score >= 40 ? 'fair' : 'poor'
 }
 
-/** `fixed · 2 days ago`; the card upper-cases it in CSS. */
-export function fixLabel(fix: { fixedAt: number }, now: number): string {
-  return `fixed · ${ago(fix.fixedAt, now)}`
+/** `fixed · 2 days ago`, or `fixed` without the age; the card upper-cases it in CSS. */
+export function fixLabel(fix: { fixedAt: number }, now: number, withAge: boolean): string {
+  return withAge ? `fixed · ${ago(fix.fixedAt, now)}` : 'fixed'
 }
 
 /** A row text for an action that still runs (`reviewing…`, `checking…`). */
 export function isRunning(text: string): boolean {
   return text.endsWith('…')
+}
+
+/** How long a finished row text stays on the card. */
+export const RESULT_TTL_MS = 15 * 60_000
+
+/** A row text that sends the reader to the Log (`see the log`, `(see Log)`). */
+export function pointsToLog(text: string): boolean {
+  return /see the log|\(see log\)/i.test(text)
+}
+
+/** The card top line shows an age only when the review score, the fix or the update is alone on it. */
+export function showAges(review: boolean, fix: boolean, intel: boolean): boolean {
+  return [review, fix, intel].filter(Boolean).length === 1
+}
+
+/** A finished row text set at `at` has stayed its 15 min; a running one never expires. */
+export function expired(text: string, at: number | undefined, now: number): boolean {
+  return !isRunning(text) && at !== undefined && now - at >= RESULT_TTL_MS
 }
 
 export type Remote = Extract<Entry['source'], { type: 'github' | 'tessl' }>

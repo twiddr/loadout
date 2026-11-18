@@ -162,7 +162,8 @@ import {
   saveReview,
   savedScore
 } from './reviews'
-import { fallbackDirsFrom, recheckMsFrom, startupCheck } from './startup'
+import { fallbackDirsFrom, recheckMsFrom, startupCheck, toolVersion } from './startup'
+import { runTesslUpdate, updateEnv } from './tesslupdate'
 import { canReplace, finishUpdate, newUpdateFolder, prepareUpdate, startSwap } from './update'
 
 const paths = pathsFrom(homedir())
@@ -221,6 +222,8 @@ const registry: Record<string, RegistryStatus> = {}
  * answer that is not pending, at a new Publish of the plugin, or at a restart.
  */
 const followUps = new Map<string, { ref: Manifest; timers: NodeJS.Timeout[] }>()
+/** True while the launch's Tessl update call runs and Tessl has started a real update. */
+let tesslUpdating = false
 /** A newer release a check found; never cleared during the session, never saved. */
 let appUpdate: State['appUpdate'] = null
 /** The app update check in flight: a second request joins it. Outside `busy` and `running`. */
@@ -305,7 +308,8 @@ async function buildState(): Promise<State> {
     edited: await currentEdited(snap.entries, manifests),
     registry,
     synced: (await readSynced(paths, config.agents))?.synced ?? null,
-    appUpdate
+    appUpdate,
+    tesslUpdating
   }
 }
 
@@ -2055,6 +2059,7 @@ async function start(): Promise<void> {
   // page, as the lines of a past update's swap log do, so they reach the Log page.
   void muster().then(async (ok) => {
     if (!ok) return
+    void tesslSelfUpdate()
     await loaded
     const bundle = ownBundle()
     if (bundle) {
@@ -2064,6 +2069,55 @@ async function start(): Promise<void> {
     }
     launchCheck()
   })
+}
+
+/**
+ * The launch's one `tessl` call that may update Tessl (src/main/tesslupdate.ts): outside `busy`
+ * and `running`, with no cancel, so neither a command nor a quit stops an update half-way. When it
+ * ends, the TESSL row reads the version again.
+ */
+async function tesslSelfUpdate(): Promise<void> {
+  const tessl = startup.tools.tessl
+  if (!tessl) return
+  // The run reaches the Log page only when Tessl really updates; a launch without one logs nothing.
+  let id: number | null = null
+  const held: { stream: 'stdout' | 'stderr'; line: string }[] = []
+  try {
+    const result = await runTesslUpdate({
+      tessl: tessl.path,
+      env: updateEnv(env, process.env),
+      cwd: paths.loadout,
+      logFile: join(paths.home, '.tessl', 'auto-update.log'),
+      onStart: () => {
+        const runIdNow = ++runId
+        id = runIdNow
+        send({ runId: runIdNow, action: 'tessl-update', command: `${tessl.path} whoami` })
+        send({ runId: runIdNow, stream: 'meta', line: 'Tessl is updating itself.' })
+        for (const { stream, line } of held) send({ runId: runIdNow, stream, line })
+        tesslUpdating = true
+        void pushState()
+      },
+      onLine: (stream, line) => {
+        if (id === null) held.push({ stream, line })
+        else send({ runId: id, stream, line })
+      }
+    })
+    if (id !== null) {
+      if (result.timedOut) send({ runId: id, stream: 'meta', line: 'timed out' })
+      if (result.code !== null) send({ runId: id, exit: result.code })
+      else send({ runId: id, exit: null, stopped: result.timedOut ? 'timed-out' : 'failed' })
+    }
+  } finally {
+    tesslUpdating = false
+  }
+  // A Refresh during the call owns `startup`; it reads the version itself.
+  if (!startup.mustering && startup.tools.tessl?.path === tessl.path) {
+    const version = await toolVersion(tessl.path, env, paths.loadout)
+    if (version !== null && !startup.mustering && startup.tools.tessl?.path === tessl.path) {
+      startup = { ...startup, tools: { ...startup.tools, tessl: { path: tessl.path, version } } }
+    }
+  }
+  await pushState().catch(() => undefined)
 }
 
 /**

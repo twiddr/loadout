@@ -68,11 +68,18 @@ test('launches, renders the shell and the startup line', async () => {
     const probe = page.getByRole('article', { name: 'probe', exact: true })
     const probeGh = page.getByRole('article', { name: 'probe-gh', exact: true })
     await expect(probe.getByText('SK-01')).toBeVisible()
-    await expect(probe.getByTitle('~/Code/Skills/probe')).toBeVisible()
+    await expect(probe.getByText('~/Code/Skills/probe', { exact: true })).toBeVisible()
     await expect(probe.getByRole('img', { name: 'Issued to 1 agent' })).toBeVisible()
     await expect(probe.getByRole('checkbox', { name: 'probe OpenCode' })).toBeVisible()
     await expect(probeGh.getByRole('checkbox', { name: 'probe-gh OpenCode' })).toBeVisible()
-    await expect(probeGh.getByText('SK-02 · STOWED')).toBeVisible()
+    await expect(probeGh.getByText('SK-02', { exact: true })).toBeVisible()
+    await expect(probeGh.getByText(/STOWED/)).toHaveCount(0)
+    // The first agent box lines up with the tile, and the boxes sit 6 px apart.
+    const tileBox = await probe.locator('.tile').boundingBox()
+    const ccBox = await probe.locator('.card-foot label.toggle').nth(0).boundingBox()
+    const nextBox = await probe.locator('.card-foot label.toggle').nth(1).boundingBox()
+    expect(ccBox?.x).toBe(tileBox?.x)
+    expect((nextBox?.x ?? 0) - ((ccBox?.x ?? 0) + (ccBox?.width ?? 0))).toBe(6)
     await expect(page.getByRole('checkbox', { name: /probe Claude Code/ })).toBeChecked()
     await expect(
       page.getByRole('region', { name: 'Claude Code' }).getByText('1 / 2 SLOTS')
@@ -407,8 +414,7 @@ test('tessl status: card mark, TESSL card and SHARE', async () => {
     await page.mouse.move(0, 0)
     await probe.getByRole('button', { name: 'probe', exact: true }).click()
     const tessl = page.getByRole('region', { name: 'Tessl' })
-    await expect(tessl.getByText('acme/probe', { exact: true })).toHaveAttribute(
-      'title',
+    await expect(tessl.getByText('acme/probe', { exact: true })).toHaveAccessibleDescription(
       'acme/probe'
     )
     await expect(tessl.getByText('0.1.0', { exact: true })).toBeVisible()
@@ -506,12 +512,10 @@ test('tessl status: TESSL card of a Registry skill', async () => {
     )
     await tessl.getByRole('button', { name: 'Check the registry' }).click()
     await expect(tessl.getByText('archived', { exact: true })).toBeVisible()
-    await expect(tessl.getByText('ARCHIVED', { exact: true })).toHaveAttribute(
-      'title',
+    await expect(tessl.getByText('ARCHIVED', { exact: true })).toHaveAccessibleDescription(
       'Archived on the registry: Old.'
     )
-    await expect(tessl.getByText('DEPRECATED', { exact: true })).toHaveAttribute(
-      'title',
+    await expect(tessl.getByText('DEPRECATED', { exact: true })).toHaveAccessibleDescription(
       'Deprecated on the registry; no reason given.'
     )
     await expect(page.locator('.check-strip')).toHaveCount(0)
@@ -575,7 +579,7 @@ test('tessl status: files newer than the manifest read as changed since publish'
     })
     await expect(text).toBeVisible()
     // The file names are only in the hover text, never in the sentence.
-    await expect(text).toHaveAttribute('title', 'Changed since publish of 0.1.0:\nSKILL.md')
+    await expect(text).toHaveAccessibleDescription('Changed since publish of 0.1.0:\nSKILL.md')
     await expect(tessl.getByText('EDITED')).toHaveCount(0)
 
     // Two more newer files: the hover text lists them, newest first.
@@ -590,8 +594,7 @@ test('tessl status: files newer than the manifest read as changed since publish'
       timeout: 10000
     })
     await page.evaluate(() => window.loadout.invoke('refresh'))
-    await expect(text).toHaveAttribute(
-      'title',
+    await expect(text).toHaveAccessibleDescription(
       'Changed since publish of 0.1.0:\nSKILL.md\nnotes.md\nscripts/run.sh'
     )
 
@@ -688,8 +691,7 @@ test('tessl status: CHECK walks every registry state and Publish fills it', asyn
 
     answer(info('0.1.0', { archived: true, archivedReason: 'Old.' }))
     await check.click()
-    await expect(tessl.getByText('ARCHIVED')).toHaveAttribute(
-      'title',
+    await expect(tessl.getByText('ARCHIVED', { exact: true })).toHaveAccessibleDescription(
       'Archived on the registry: Old.'
     )
 
@@ -701,8 +703,7 @@ test('tessl status: CHECK walks every registry state and Publish fills it', asyn
     )
     await check.click()
     await expect(tessl.getByText('archived', { exact: true })).toBeVisible()
-    await expect(tessl.getByText('ARCHIVED', { exact: true })).toHaveAttribute(
-      'title',
+    await expect(tessl.getByText('ARCHIVED', { exact: true })).toHaveAccessibleDescription(
       'Archived on the registry: Replaced by a newer helper'
     )
     await expect(tessl.getByText('pending', { exact: true })).toHaveCount(0)
@@ -1042,7 +1043,7 @@ test('first launch: empty library, no agent, claude missing', async () => {
     const systems = page.getByRole('dialog').getByRole('region', { name: 'Systems' })
     const missing = systems.locator('.tip', { hasText: 'not found' })
     await expect(missing).toBeVisible()
-    const hint = systems.locator('[role="tooltip"]')
+    const hint = systems.locator('[role="tooltip"]', { hasText: 'Install' })
     await expect(hint).toHaveText(/claude\.ai\/install\.sh/)
     await expect(hint).toBeHidden()
     await expect(async () => {
@@ -1492,7 +1493,10 @@ test('update all names the source whose pull failed and updates the others', asy
       'Update all: 1 source failed (acme/pullfail); see the log.'
     )
     await expect(
-      page.getByRole('article', { name: 'probe-gh', exact: true }).getByText('updated')
+      page
+        .getByRole('article', { name: 'probe-gh', exact: true })
+        .locator('.card-foot')
+        .getByText('updated')
     ).toBeVisible()
     await page.getByRole('link', { name: 'Intel' }).click()
     await expect(
@@ -2029,6 +2033,14 @@ test('saved review: score on the card, REVIEW tab, restart, stale on change', as
     await page.getByRole('button', { name: 'RUN REVIEW' }).click()
     await expect(page.locator('.skill-result')).toHaveText('· review done, see the log')
     await page.getByRole('button', { name: 'Back to Loadout' }).click()
+    const logResult = again.getByRole('button', {
+      name: 'Open the Log: review done, see the log'
+    })
+    await expect(logResult).toBeVisible()
+    await expect(again.locator('.card-top')).not.toContainText('review done')
+    await logResult.click()
+    await expect(page.getByRole('link', { name: 'Log' })).toHaveAttribute('aria-current', 'page')
+    await page.getByRole('link', { name: 'Loadout' }).click()
 
     await page.getByLabel('Actions for probe', { exact: true }).click()
     await page.getByRole('button', { name: 'Remove' }).click()

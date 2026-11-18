@@ -1,7 +1,7 @@
 import type { LogEvent, Startup, State } from '../../core/ipc'
 import { api } from './api'
 import { shouldOpenBootCamp } from './bootcamp'
-import { trimLog, type Filter } from './format'
+import { expired, trimLog, type Filter } from './format'
 
 export type Page =
   | { name: 'loadout' }
@@ -25,6 +25,8 @@ export const app = $state<{
   log: LogEvent[]
   notice: string | null
   rowResult: Record<string, string>
+  /** When each row text was set, for the 15 min expiry of a finished one. */
+  rowAt: Record<string, number>
   page: Page
   search: string
   filter: Filter
@@ -45,6 +47,7 @@ export const app = $state<{
   log: [],
   notice: null,
   rowResult: {},
+  rowAt: {},
   page: { name: 'loadout' },
   search: '',
   filter: 'all',
@@ -62,7 +65,21 @@ export function togglePlatoon(): void {
   app.platoonHidden = !app.platoonHidden
 }
 
-setInterval(() => (app.now = Date.now()), 30_000)
+/** Sets a card's row text and starts its 15 min. */
+export function setRow(name: string, text: string): void {
+  app.rowResult[name] = text
+  app.rowAt[name] = Date.now()
+}
+
+// The clock tick also drops finished row texts older than 15 min.
+setInterval(() => {
+  app.now = Date.now()
+  for (const [name, text] of Object.entries(app.rowResult)) {
+    if (!expired(text, app.rowAt[name], app.now)) continue
+    delete app.rowResult[name]
+    delete app.rowAt[name]
+  }
+}, 30_000)
 
 /** The one Fix, one Publish, one Remove, one Fork and one Unpublish dialog, rendered in App, and the skill they act on. */
 export const tesslDialogs = $state<{

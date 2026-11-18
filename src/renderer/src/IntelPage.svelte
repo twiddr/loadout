@@ -5,6 +5,7 @@
   import Icon from './Icon.svelte'
   import Notice from './Notice.svelte'
   import PageHeader from './PageHeader.svelte'
+  import Tip from './Tip.svelte'
   import { app } from './state.svelte'
 
   let { state: lib, eyebrow }: { state: State; eyebrow: string | null } = $props()
@@ -47,9 +48,14 @@
 
 <PageHeader title="INTEL" {line} {eyebrow}>
   {#snippet actions()}
-    <button aria-label="Check all" onclick={checkAll} disabled={busy}
-      ><Icon name="refresh" size={14} />CHECK ALL</button
+    <Tip
+      text="Ask every source for news: git fetch for each Link clone, tessl outdated for the Registry plugins. Nothing changes until you press Update."
+      end
     >
+      <button aria-label="Check all" onclick={checkAll} disabled={busy}
+        ><Icon name="refresh" size={14} />CHECK ALL</button
+      >
+    </Tip>
     <button
       class="amber"
       aria-label="Update all"

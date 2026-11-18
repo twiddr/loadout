@@ -4,6 +4,7 @@
   import { api } from './api'
   import { formatSize, splitFrontmatter } from './format'
   import Icon from './Icon.svelte'
+  import Tip from './Tip.svelte'
   import { renderMarkdown } from './markdown'
   import Notice from './Notice.svelte'
   import { app, openRecruit } from './state.svelte'
@@ -68,7 +69,7 @@
           <span class="swatch-line local"
             ><span class="swatch-sq local"></span>{isLink ? 'LINK' : 'FOLDER'}</span
           >
-          <span class="skill-source" title={address}>{address}</span>
+          <Tip text={address} overflow><span class="skill-source">{address}</span></Tip>
         </div>
       </div>
       <div class="skill-actions">

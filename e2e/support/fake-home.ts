@@ -125,9 +125,20 @@ else
   echo "git version 2.47.0"
 fi`
   )
+  // \`whoami\` appends its TESSL_AUTO_UPDATE_INTERVAL_MINUTES to \`tessl-whoami-env\`. When that is not 0
+  // and \`tessl-update-to\` exists, it fakes an update: a start line in \`.tessl/auto-update.log\`, a
+  // sleep of the seconds in \`tessl-update.sleep\` (default 3), then \`--version\` prints the new
+  // version (\`tessl-version\`, else 0.119.0).
   script(
     join(bin, 'tessl'),
     `if [ "$1" = whoami ]; then
+  echo "$TESSL_AUTO_UPDATE_INTERVAL_MINUTES" >> "${home}/tessl-whoami-env"
+  if [ "$TESSL_AUTO_UPDATE_INTERVAL_MINUTES" != 0 ] && [ -f "${home}/tessl-update-to" ]; then
+    /bin/mkdir -p "${home}/.tessl"
+    echo '=== Auto-update started at fake ===' >> "${home}/.tessl/auto-update.log"
+    if [ -f "${home}/tessl-update.sleep" ]; then /bin/sleep "$(/bin/cat "${home}/tessl-update.sleep")"; else /bin/sleep 3; fi
+    /bin/cp "${home}/tessl-update-to" "${home}/tessl-version"
+  fi
   if [ -n "$FAKE_WHOAMI_SLEEP" ]; then /bin/sleep "$FAKE_WHOAMI_SLEEP"; fi
   echo '{"authenticated":true,"method":"session","user":{"name":"acme-dev"}}'
 elif [ "$*" = "workspace list --json" ]; then
@@ -212,6 +223,8 @@ elif [ "$*" = "outdated --global --json" ]; then
     upToDate: [],
     errors: []
   })}'
+elif [ -f "${home}/tessl-version" ]; then
+  /bin/cat "${home}/tessl-version"
 else
   echo 0.119.0
 fi`

@@ -15,6 +15,7 @@
   import Icon from './Icon.svelte'
   import Notice from './Notice.svelte'
   import PageHeader from './PageHeader.svelte'
+  import Tip from './Tip.svelte'
   import { app, openRecruit, report } from './state.svelte'
 
   let { state: lib, eyebrow }: { state: State; eyebrow: string | null } = $props()
@@ -25,7 +26,8 @@
     lib.agents.map((agent) => ({
       agent,
       scanned: lib.startup.folders[agent.id] !== false,
-      count: `${lib.entries.filter((e) => e.enabledFor.includes(agent.id)).length} + ${lib.unmanaged.filter((u) => u.agentId === agent.id).length}`
+      links: lib.entries.filter((e) => e.enabledFor.includes(agent.id)).length,
+      unmanaged: lib.unmanaged.filter((u) => u.agentId === agent.id).length
     }))
   )
 
@@ -74,12 +76,13 @@
 {#if app.undone}
   <p class="notice dismissable done" role="status">
     <span class="notice-text">{app.undone}</span>
-    <button
-      class="icon small-icon notice-close"
-      aria-label="Dismiss"
-      title="Dismiss"
-      onclick={() => (app.undone = null)}><Icon name="x" size={13} /></button
-    >
+    <Tip text="Dismiss" end>
+      <button
+        class="icon small-icon notice-close"
+        aria-label="Dismiss"
+        onclick={() => (app.undone = null)}><Icon name="x" size={13} /></button
+      >
+    </Tip>
   </p>
 {/if}
 
@@ -113,16 +116,17 @@
                 <td>{label(item.agentId)}</td>
                 <td class="recon-name">
                   {#if synced}
-                    <button
-                      class="recon-fold"
-                      aria-expanded={!!unfolded[key]}
-                      title={unfolded[key] ? 'Hide the synced skills' : 'Show the synced skills'}
-                      onclick={() => (unfolded[key] = !unfolded[key])}
-                      >{item.name}<Icon
-                        name={unfolded[key] ? 'chevron-down' : 'chevron-right'}
-                        size={14}
-                      /></button
-                    >
+                    <Tip text={unfolded[key] ? 'Hide the synced skills' : 'Show the synced skills'}>
+                      <button
+                        class="recon-fold"
+                        aria-expanded={!!unfolded[key]}
+                        onclick={() => (unfolded[key] = !unfolded[key])}
+                        >{item.name}<Icon
+                          name={unfolded[key] ? 'chevron-down' : 'chevron-right'}
+                          size={14}
+                        /></button
+                      >
+                    </Tip>
                   {:else}
                     {item.name}
                   {/if}
@@ -358,7 +362,7 @@
   <aside class="recon-side narrow" aria-label="Folders scanned">
     <span class="recon-title">FOLDERS SCANNED</span>
     <div class="recon-panel">
-      {#each folders as { agent, scanned, count } (agent.id)}
+      {#each folders as { agent, scanned, links, unmanaged } (agent.id)}
         <div class="folder-row">
           <span class="folder-swatch" class:off={!scanned}></span>
           <span class="folder-text">
@@ -366,7 +370,16 @@
             <span class="folder-path">{displayPath(agent.folder, lib.home)}</span>
             {#if !agent.enabled}<span class="folder-path">not enabled</span>{/if}
           </span>
-          <span class="folder-count">{scanned ? count : 'not created yet'}</span>
+          {#if scanned}
+            <Tip
+              text={`${links} ${plural(links, 'link', 'links')} from Loadout + ${unmanaged} unmanaged`}
+              end
+            >
+              <span class="folder-count">{links} + {unmanaged}</span>
+            </Tip>
+          {:else}
+            <span class="folder-count">not created yet</span>
+          {/if}
         </div>
       {/each}
       <div class="folder-row">

@@ -4,6 +4,7 @@
   import { api } from './api'
   import { INSTALL_HINTS, plural, versionNumber } from './format'
   import Icon from './Icon.svelte'
+  import Tip from './Tip.svelte'
   import { app, report, togglePlatoon } from './state.svelte'
 
   let {
@@ -41,14 +42,15 @@
 >
   <div class="drag squad-drag">
     {#if collapsible}
-      <button
-        class="icon squad-toggle"
-        aria-label="Hide platoon"
-        title="Hide platoon"
-        aria-controls="platoon"
-        aria-expanded="true"
-        onclick={togglePlatoon}><Icon name="panel-right" /></button
-      >
+      <Tip text="Hide platoon" end>
+        <button
+          class="icon squad-toggle"
+          aria-label="Hide platoon"
+          aria-controls="platoon"
+          aria-expanded="true"
+          onclick={togglePlatoon}><Icon name="panel-right" /></button
+        >
+      </Tip>
     {/if}
   </div>
   <div class="drag squad-head">
@@ -58,6 +60,7 @@
     >
   </div>
   {#each enabled as agent (agent.id)}
+    {@const kit = lib.entries.filter((e) => issued(e, agent.id)).length}
     <section class="agent cut" aria-label={agent.label}>
       <div class="agent-head">
         <span class="agent-name">
@@ -69,14 +72,23 @@
         {:else if lib.startup.tools[agent.command]}
           <span class="chip ok">READY</span>
         {:else}
-          <span class="chip bad">NOT FOUND</span>
+          <Tip
+            text={`${agent.command} is not found on this Mac. ${agent.label} loads its skills once it is installed; SYSTEMS below shows how.`}
+            end
+          >
+            <span class="chip bad">NOT FOUND</span>
+          </Tip>
         {/if}
       </div>
       <div class="kit-line">
         <span>KIT</span>
-        <span
-          ><b>{lib.entries.filter((e) => issued(e, agent.id)).length}</b> / {lib.entries.length} SLOTS</span
+        <Tip
+          text={`${kit} of the ${lib.entries.length} skills in your loadout ${kit === 1 ? 'is' : 'are'} deployed to ${agent.label}. Each square is one skill.`}
+          place="above"
+          end
         >
+          <span><b>{kit}</b> / {lib.entries.length} SLOTS</span>
+        </Tip>
       </div>
       <div class="slots">
         {#each lib.entries as entry (entry.name)}
@@ -120,13 +132,14 @@
   <div class="systems">
     <div class="systems-head">
       <span>SYSTEMS</span>
-      <button
-        class="icon small-icon"
-        aria-label="Refresh"
-        title="Refresh"
-        onclick={refresh}
-        disabled={lib.busy !== null}><Icon name="refresh" size={12} /></button
-      >
+      <Tip text="Check git, tessl and the agents again, and rescan the folders" place="above" end>
+        <button
+          class="icon small-icon"
+          aria-label="Refresh"
+          onclick={refresh}
+          disabled={lib.busy !== null}><Icon name="refresh" size={12} /></button
+        >
+      </Tip>
     </div>
     {#if lib.startup.mustering}
       <div class="muted muster-note">{MUSTER_LINE}</div>
@@ -135,7 +148,9 @@
       {#if tool}
         <div class="system">
           <span class="swatch"></span>
-          <span class="system-name">{name}</span>
+          <span class="system-name">{name}</span>{#if name === 'tessl' && lib.tesslUpdating}<span
+              class="tool-updating">UPDATING</span
+            >{/if}
           <span class="muted">{versionNumber(tool.version)}</span>
         </div>
       {:else}

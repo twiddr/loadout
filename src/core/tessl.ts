@@ -531,6 +531,15 @@ export function editedTitle(version: string, files: string[]): string {
   ].join('\n')
 }
 
+/** The version a `--bump` publish gives a `<n>.<n>.<n>` manifest version; null for another shape. */
+export function bumpVersion(version: string, bump: Bump): string | null {
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return null
+  const [major, minor, patch] = version.split('.').map(Number)
+  if (bump === 'major') return `${major + 1}.0.0`
+  if (bump === 'minor') return `${major}.${minor + 1}.0`
+  return `${major}.${minor}.${patch + 1}`
+}
+
 /** -1, 0 or 1 for two `<n>.<n>.<n>` versions; null when either is another shape. */
 export function compareVersions(a: string, b: string): number | null {
   const shape = /^\d+\.\d+\.\d+$/

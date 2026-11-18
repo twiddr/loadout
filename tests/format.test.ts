@@ -11,16 +11,20 @@ import {
   publishVisibility,
   agentCode,
   ago,
+  expired,
   fixLabel,
   formatSize,
   isRunning,
   localDate,
   matches,
   plural,
+  pointsToLog,
+  RESULT_TTL_MS,
   runText,
   scoreText,
   scoreTone,
   serial,
+  showAges,
   sourceGroups,
   sourceLine,
   splitFrontmatter
@@ -283,7 +287,47 @@ describe('formatSize', () => {
 describe('fixLabel', () => {
   test('shows fixed and the age', () => {
     const now = 10 * 86_400_000
-    expect(fixLabel({ fixedAt: now - 2 * 86_400_000 }, now)).toBe('fixed · 2 days ago')
+    expect(fixLabel({ fixedAt: now - 2 * 86_400_000 }, now, true)).toBe('fixed · 2 days ago')
+  })
+  test('shows fixed alone without the age', () => {
+    const now = 10 * 86_400_000
+    expect(fixLabel({ fixedAt: now - 2 * 86_400_000 }, now, false)).toBe('fixed')
+  })
+})
+
+describe('pointsToLog', () => {
+  test.each([
+    ['review done, see the log', true],
+    ['Added. tessl skill lint reported problems, see the log.', true],
+    ['published 0.1.1; manifest commit failed (see Log)', true],
+    ['unpublished 0.1.1; manifest not deleted (see Log)', true],
+    ['published 0.1.1', false],
+    ['up to date', false]
+  ])('%s → %s', (text, want) => expect(pointsToLog(text)).toBe(want))
+})
+
+describe('showAges', () => {
+  test.each([
+    [true, false, false, true],
+    [false, true, false, true],
+    [true, true, false, false],
+    [true, false, true, false],
+    [false, true, true, false],
+    [false, false, false, false]
+  ])('review %s fix %s intel %s → %s', (r, f, i, want) => expect(showAges(r, f, i)).toBe(want))
+})
+
+describe('expired', () => {
+  const at = 1_000_000
+  test('a finished result expires at 15 min', () => {
+    expect(expired('Added', at, at + RESULT_TTL_MS - 1)).toBe(false)
+    expect(expired('Added', at, at + RESULT_TTL_MS)).toBe(true)
+  })
+  test('a running result never expires', () => {
+    expect(expired('reviewing…', at, at + 10 * RESULT_TTL_MS)).toBe(false)
+  })
+  test('a result with no time does not expire', () => {
+    expect(expired('Added', undefined, at)).toBe(false)
   })
 })
 

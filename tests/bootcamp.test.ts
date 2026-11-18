@@ -41,6 +41,7 @@ function stateWith(
     registry: {},
     synced: null,
     appUpdate: null,
+    tesslUpdating: false,
     startup: {
       pathSource: 'inherited',
       tools: { git: null, tessl: null, claude: null, codex: null },

@@ -2,6 +2,7 @@
   import { api } from './api'
   import Icon, { type IconName } from './Icon.svelte'
   import Logo from './Logo.svelte'
+  import Tip from './Tip.svelte'
   import { sourceGroups } from './format'
   import { app, openBriefing, report, type Page } from './state.svelte'
 
@@ -55,41 +56,61 @@
   <div class="rail-logo"><Logo size={28} /></div>
   {#each tabs as tab (tab.name)}
     {#if tab.name === 'bootcamp'}<span class="rail-sep" aria-hidden="true"></span>{/if}
-    <a
-      href={`#${tab.name}`}
-      class="rail-tab"
-      class:on={current === tab.name}
-      aria-current={current === tab.name ? 'page' : undefined}
-      onclick={(e) => {
-        e.preventDefault()
-        app.page = { name: tab.name }
-        // LOADOUT always lands on the SKILLS / PACKS page; the mouse back button still reopens the pack.
-        if (tab.name === 'loadout') app.pack = null
-      }}
+    <!-- With updates waiting, the INTEL tab's tip counts them. -->
+    <Tip
+      text={tab.name === 'intel' && intelCount > 0
+        ? `${intelCount} ${intelCount === 1 ? 'source has an update' : 'sources have updates'}`
+        : ''}
+      place="side"
     >
-      <Icon name={tab.icon} size={19} />{tab.label}
-      {#if tab.name === 'intel' && intelCount > 0}
-        <span class="rail-badge">{intelCount}</span>
-      {/if}
-      {#if tab.name === 'log' && busy}
-        <span class="rail-dot" aria-hidden="true"></span>
-      {/if}
-    </a>
+      <a
+        href={`#${tab.name}`}
+        class="rail-tab"
+        class:on={current === tab.name}
+        aria-current={current === tab.name ? 'page' : undefined}
+        onclick={(e) => {
+          e.preventDefault()
+          app.page = { name: tab.name }
+          // LOADOUT always lands on the SKILLS / PACKS page; the mouse back button still reopens the pack.
+          if (tab.name === 'loadout') app.pack = null
+        }}
+      >
+        <Icon name={tab.icon} size={19} />{tab.label}
+        {#if tab.name === 'intel' && intelCount > 0}
+          <span class="rail-badge">{intelCount}</span>
+        {/if}
+        {#if tab.name === 'log' && busy}
+          <span class="rail-dot" aria-hidden="true"></span>
+        {/if}
+      </a>
+    </Tip>
   {/each}
   <span class="spacer"></span>
-  <button
-    class="icon appearance"
-    aria-label={appearanceLabel}
-    title={appearanceLabel}
-    onclick={toggleAppearance}><Icon name={dark ? 'sun' : 'moon'} size={16} /></button
+  <Tip text={appearanceLabel} place="side">
+    <button class="icon appearance" aria-label={appearanceLabel} onclick={toggleAppearance}
+      ><Icon name={dark ? 'sun' : 'moon'} size={16} /></button
+    >
+  </Tip>
+  <Tip text="Briefing" place="side">
+    <button class="icon" aria-label="Briefing" onclick={() => openBriefing(false)}
+      ><Icon name="circle-help" size={16} /></button
+    >
+  </Tip>
+  <Tip text="Settings" place="side">
+    <button class="icon rail-settings" aria-label="Settings" onclick={onsettings}
+      ><Icon name="settings" size={15} /></button
+    >
+  </Tip>
+  <Tip
+    text={mustering
+      ? 'Checking git, tessl and the agents on this Mac.\nCommands wait until the check ends.'
+      : busy
+        ? 'A command is running.\nThe Log shows its output.'
+        : ''}
+    place="side"
   >
-  <button class="icon" aria-label="Briefing" title="Briefing" onclick={() => openBriefing(false)}
-    ><Icon name="circle-help" size={16} /></button
-  >
-  <button class="icon rail-settings" aria-label="Settings" title="Settings" onclick={onsettings}
-    ><Icon name="settings" size={15} /></button
-  >
-  <span class="rail-status" class:busy={busy || mustering}
-    >{mustering ? 'MUSTERING' : busy ? 'BUSY' : 'READY'}</span
-  >
+    <span class="rail-status" class:busy={busy || mustering}
+      >{mustering ? 'MUSTERING' : busy ? 'BUSY' : 'READY'}</span
+    >
+  </Tip>
 </nav>

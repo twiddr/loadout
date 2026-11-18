@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  bumpVersion,
   fixArgs,
   installArgs,
   outdatedArgs,
@@ -590,5 +591,18 @@ describe('editedTitle', () => {
     expect(lines).toHaveLength(22)
     expect(lines[20]).toBe('f20.md')
     expect(lines[21]).toBe('… and 2 more')
+  })
+})
+
+describe('bumpVersion', () => {
+  it('raises one part and zeroes the parts after it', () => {
+    expect(bumpVersion('1.2.3', 'patch')).toBe('1.2.4')
+    expect(bumpVersion('1.2.3', 'minor')).toBe('1.3.0')
+    expect(bumpVersion('1.2.3', 'major')).toBe('2.0.0')
+  })
+
+  it('gives null for a version of another shape', () => {
+    expect(bumpVersion('1.2', 'patch')).toBeNull()
+    expect(bumpVersion('1.2.3-beta.1', 'minor')).toBeNull()
   })
 })

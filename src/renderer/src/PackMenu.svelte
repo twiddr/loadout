@@ -3,6 +3,7 @@
   import type { Pack } from '../../core/packs'
   import AddDialog from './AddDialog.svelte'
   import Icon from './Icon.svelte'
+  import Tip from './Tip.svelte'
   import { check, reveal, update, updateLabel } from './actions'
   import { openPackRemove } from './state.svelte'
 
@@ -18,13 +19,14 @@
   let add = $state<AddDialog>()
 </script>
 
-<button
-  class="icon"
-  aria-label={`Actions for ${pack.name}`}
-  title={`Actions for ${pack.name}`}
-  popovertarget={`menu-${id}`}
-  style:anchor-name={`--menu-${id}`}><Icon name="ellipsis" /></button
->
+<Tip text="Actions" place="above" end>
+  <button
+    class="icon"
+    aria-label={`Actions for ${pack.name}`}
+    popovertarget={`menu-${id}`}
+    style:anchor-name={`--menu-${id}`}><Icon name="ellipsis" /></button
+  >
+</Tip>
 <div popover id={`menu-${id}`} class="menu-pop float" style:position-anchor={`--menu-${id}`}>
   {#if first && (source?.type === 'github' || source?.type === 'tessl')}
     <button
@@ -39,12 +41,15 @@
       onclick={() => update(first, lib.entries)}
       disabled={busy || noTool}>{updateLabel(source, lib.entries)}</button
     >
-    <button
-      popovertarget={`menu-${id}`}
-      popovertargetaction="hide"
-      onclick={() => add?.scanSource(pack.name)}
-      disabled={busy || noTool}>Recruit more from {pack.name}</button
-    >
+    <!-- A Registry plugin holds one skill, so only a Link can have more to recruit. -->
+    {#if pack.type === 'github'}
+      <button
+        popovertarget={`menu-${id}`}
+        popovertargetaction="hide"
+        onclick={() => add?.scanSource(pack.name)}
+        disabled={busy || noTool}>Recruit more from {pack.name}</button
+      >
+    {/if}
     <hr class="menu-sep" />
     <button
       popovertarget={`menu-${id}`}
@@ -60,4 +65,6 @@
     disabled={busy}>Remove</button
   >
 </div>
-<AddDialog kind={pack.type} {busy} bind:this={add} />
+{#if pack.type === 'github'}
+  <AddDialog kind="github" {busy} bind:this={add} />
+{/if}

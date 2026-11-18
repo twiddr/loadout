@@ -19,6 +19,7 @@
   import UpdatePrompt from './UpdatePrompt.svelte'
   import SkillPage from './SkillPage.svelte'
   import SquadPanel from './SquadPanel.svelte'
+  import Tip from './Tip.svelte'
   import { sourceKey } from '../../core/checks'
   import { confirmRemove, confirmRemovePack, publish, runFix, unpublish } from './actions'
   import { api } from './api'
@@ -165,14 +166,15 @@
 <!-- After .shell: Chromium lets a later drag region win, so the Show platoon button must follow the page's drag strips. -->
 <div class="app-corner">
   {#if app.state && app.page.name === 'skill' && app.platoonHidden}
-    <button
-      class="icon platoon-show"
-      aria-label="Show platoon"
-      title="Show platoon"
-      aria-controls="platoon"
-      aria-expanded="false"
-      onclick={togglePlatoon}><Icon name="panel-right" /></button
-    >
+    <Tip text="Show platoon" end>
+      <button
+        class="icon platoon-show"
+        aria-label="Show platoon"
+        aria-controls="platoon"
+        aria-expanded="false"
+        onclick={togglePlatoon}><Icon name="panel-right" /></button
+      >
+    </Tip>
   {/if}
   {#if app.state?.appUpdate}
     {@const latest = app.state.appUpdate.latest}

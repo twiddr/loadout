@@ -4,7 +4,8 @@
   import { api } from './api'
   import { addedText, agentCode } from './format'
   import Icon from './Icon.svelte'
-  import { app, report } from './state.svelte'
+  import Tip from './Tip.svelte'
+  import { app, report, setRow } from './state.svelte'
 
   let {
     kind,
@@ -138,7 +139,7 @@
         return
       }
       report(result)
-      for (const name of result.added) app.rowResult[name] = addedText(result.lint[name] ?? 'ok')
+      for (const name of result.added) setRow(name, addedText(result.lint[name] ?? 'ok'))
       if (result.refused.length > 0) {
         app.notice = `Added, but not deployed: ${result.refused.map((r) => `${r.skill}: ${r.message}`).join('; ')}`
       }
@@ -338,14 +339,16 @@
         <div class="deploy-to">
           <span class="muted">Deploy to</span>
           {#each agents as agent (agent.id)}
-            <label class="toggle">
-              <input
-                type="checkbox"
-                aria-label={`Deploy to ${agent.label}`}
-                bind:checked={deployTo[agent.id]}
-              />
-              <span>{agentCode(agent)}</span>
-            </label>
+            <Tip text={agent.label} place="above">
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  aria-label={`Deploy to ${agent.label}`}
+                  bind:checked={deployTo[agent.id]}
+                />
+                <span>{agentCode(agent)}</span>
+              </label>
+            </Tip>
           {/each}
         </div>
       {/if}

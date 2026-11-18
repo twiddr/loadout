@@ -24,6 +24,7 @@
   import Notice from './Notice.svelte'
   import Rank from './Rank.svelte'
   import SkillMenu from './SkillMenu.svelte'
+  import Tip from './Tip.svelte'
   import { app, openTesslDialog } from './state.svelte'
 
   let {
@@ -227,7 +228,7 @@
           <span class="swatch-line {entry.source.type}"
             ><span class="swatch-sq {entry.source.type}"></span>{kind.toUpperCase()}</span
           >
-          <span class="skill-source" title={address}>{address}</span>
+          <Tip text={address} overflow><span class="skill-source">{address}</span></Tip>
           {#if saved}
             <span class="skill-result"
               >· review <span class="score {scoreTone(saved.score)}">{scoreText(saved.score)}</span>
@@ -315,9 +316,11 @@
       <div class="intel-strip hazard edited-strip">
         <div class="intel-strip-body">
           <span class="intel-strip-label">TESSL</span>
-          <span class="intel-strip-text" title={editedTitle(manifest.version, edited)}
-            >Files changed after version {manifest.version} was published.</span
-          >
+          <Tip text={editedTitle(manifest.version, edited)}>
+            <span class="intel-strip-text"
+              >Files changed after version {manifest.version} was published.</span
+            >
+          </Tip>
           <span class="spacer"></span>
           <!-- The folder-ahead strip already offers PUBLISH. -->
           {#if direction !== 1}
@@ -355,14 +358,15 @@
             >
           {/if}
           {#if hasDiff}
-            <button
-              role="tab"
-              class="skill-tab"
-              aria-selected={shownTab === 'diff'}
-              onclick={() => pick('diff')}
-              title={`${behind} new ${plural(behind, 'commit', 'commits')} upstream`}
-              >Diff<span class="tab-count" aria-hidden="true">{behind}</span></button
-            >
+            <Tip text={`${behind} new ${plural(behind, 'commit', 'commits')} upstream`}>
+              <button
+                role="tab"
+                class="skill-tab"
+                aria-selected={shownTab === 'diff'}
+                onclick={() => pick('diff')}
+                >Diff<span class="tab-count" aria-hidden="true">{behind}</span></button
+              >
+            </Tip>
           {/if}
           {#if isGithub}
             <button
@@ -615,7 +619,7 @@
           <section class="side-card" aria-label="Tessl">
             <div class="side-title"><span>TESSL</span></div>
             <div class="spec-row">
-              <span>PLUGIN</span><span title={plugin}>{plugin}</span>
+              <span>PLUGIN</span><Tip text={plugin} overflow><span>{plugin}</span></Tip>
             </div>
             <div class="spec-row">
               <span>{manifest ? 'MANIFEST' : 'INSTALLED'}</span><span>{card.version}</span>
@@ -638,21 +642,32 @@
                 {#if !registry}
                   <span>not checked</span>
                 {:else if registry.state === 'found'}
-                  <span title="published {localDate(registry.publishedAt)} · {registry.version}"
-                    >published {localDate(registry.publishedAt)} · {registry.version}</span
+                  <Tip
+                    text={`published ${localDate(registry.publishedAt)} · ${registry.version}`}
+                    overflow
+                    ><span>published {localDate(registry.publishedAt)} · {registry.version}</span
+                    ></Tip
                   >
                   {#if registry.archived !== null}
-                    <span class="recon-tag warn" title={registry.archived}>ARCHIVED</span>
+                    <Tip text={registry.archived} end
+                      ><span class="recon-tag warn">ARCHIVED</span></Tip
+                    >
                   {/if}
                   {#if registry.deprecated !== null}
-                    <span class="recon-tag warn" title={registry.deprecated}>DEPRECATED</span>
+                    <Tip text={registry.deprecated} end
+                      ><span class="recon-tag warn">DEPRECATED</span></Tip
+                    >
                   {/if}
                 {:else if registry.state === 'archived'}
                   <!-- A whole-plugin archive names no latest version (backlog 35). -->
                   <span>archived</span>
-                  <span class="recon-tag warn" title={registry.archived}>ARCHIVED</span>
+                  <Tip text={registry.archived ?? ''} end
+                    ><span class="recon-tag warn">ARCHIVED</span></Tip
+                  >
                   {#if registry.deprecated !== null}
-                    <span class="recon-tag warn" title={registry.deprecated}>DEPRECATED</span>
+                    <Tip text={registry.deprecated} end
+                      ><span class="recon-tag warn">DEPRECATED</span></Tip
+                    >
                   {/if}
                 {:else}
                   <span
@@ -681,9 +696,14 @@
                 aria-label="Open in registry"
                 ><Icon name="external-link" size={12} />OPEN IN REGISTRY</a
               >
-              <button class="small" aria-label="Share" onclick={share}
-                ><Icon name={shared ? 'check' : 'copy'} size={12} />SHARE</button
+              <Tip
+                text="Copy a message with the registry link and the install command, to send to a colleague"
+                end
               >
+                <button class="small" aria-label="Share" onclick={share}
+                  ><Icon name={shared ? 'check' : 'copy'} size={12} />SHARE</button
+                >
+              </Tip>
             </div>
           </section>
         {/if}
@@ -741,12 +761,17 @@
         {/if}
         <span class="spacer"></span>
         {#if entry.status !== 'not-a-link'}
-          <button
-            class="decommission"
-            aria-label="Decommission skill"
-            onclick={() => remove(entry)}
-            disabled={busy}>DECOMMISSION SKILL</button
+          <Tip
+            text="Remove the skill from your loadout and its agent links. Asks first."
+            place="above"
           >
+            <button
+              class="decommission"
+              aria-label="Decommission skill"
+              onclick={() => remove(entry)}
+              disabled={busy}>DECOMMISSION SKILL</button
+            >
+          </Tip>
         {/if}
       </div>
     </div>

@@ -289,6 +289,45 @@ test('packs: the recruit icon of an opened pack scans its link', async () => {
   }
 })
 
+test('packs: a Registry pack and its skills offer no Recruit more', async () => {
+  const { home, env } = fakeHome()
+  addSkill(home, '.tessl/plugins', 'acme/kit/skills/probe-t', 'probe-t')
+  addSkill(home, '.tessl/plugins', 'acme/kit/skills/probe-t2', 'probe-t2')
+  try {
+    await withApp(home, env, async (page) => {
+      await viewButton(page, 'PACKS').click()
+      const card = page.locator('article.pack-card', { hasText: 'acme/kit' })
+      await expect(card).toBeVisible()
+      await page.getByRole('button', { name: 'Actions for acme/kit', exact: true }).click()
+      await expect(page.locator('.menu-pop:popover-open button')).toHaveText([
+        'Check source',
+        'Update acme/kit (2 skills)',
+        'Reveal in Finder',
+        'Remove'
+      ])
+      await page.keyboard.press('Escape')
+
+      await page.mouse.move(0, 0)
+      await card.getByRole('button', { name: 'acme/kit', exact: true }).click()
+      await expect(page.getByRole('button', { name: 'Back to packs' })).toBeVisible()
+      await expect(page.locator('.recruit-more')).toHaveCount(0)
+
+      await page.getByRole('button', { name: 'probe-t', exact: true }).click()
+      await page.getByRole('button', { name: 'Actions for probe-t', exact: true }).click()
+      await expect(page.locator('.menu-pop:popover-open button')).toHaveText([
+        'Check source',
+        'Update acme/kit (2 skills)',
+        'Tessl review',
+        'Fork',
+        'Reveal in Finder',
+        'Remove'
+      ])
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('packs: a search or a filter shows skill cards, not pack cards', async () => {
   const { home, env } = packHome()
   try {
@@ -540,6 +579,31 @@ test('packs: the single Remove of the last skill of a clone deletes the clone', 
         .poll(() => existsSync(join(home, '.loadout', 'repos', 'acme', 'tools')))
         .toBe(false)
       await expect(page.getByRole('alert')).toHaveCount(0)
+    })
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
+test('packs: an update result shows in the pack card foot', async () => {
+  const { home, env } = packHome()
+  try {
+    await withApp(home, env, async (page) => {
+      await toPacks(page)
+      const card = packCard(page)
+      await page.getByRole('link', { name: 'Intel' }).click()
+      await page.getByRole('status').getByRole('button', { name: 'Check all' }).click()
+      await expect(
+        page.getByRole('article', { name: 'acme/tools' }).getByText('2 BEHIND')
+      ).toBeVisible()
+      await page.getByRole('link', { name: 'Loadout' }).click()
+      await card.getByRole('button', { name: 'Actions for acme/tools' }).click()
+      await page.getByRole('button', { name: /^Update acme\/tools/ }).click()
+      await expect(card.locator('.card-foot')).toContainText('updated')
+      await expect(card.locator('.card-top')).not.toContainText('updated')
+      const tileBox = await card.locator('.tile').boundingBox()
+      const ccBox = await card.locator('.card-foot label.toggle').nth(0).boundingBox()
+      expect(ccBox?.x).toBe(tileBox?.x)
     })
   } finally {
     rmSync(home, { recursive: true, force: true })

@@ -3,7 +3,7 @@ import type { Bump, Entry, Forked, Result } from '../../core/ipc'
 import type { Pack } from '../../core/packs'
 import { api } from './api'
 import { addedText, packRemoveText, packToggleText, publishedText, type Remote } from './format'
-import { app, openTesslDialog, report } from './state.svelte'
+import { app, openTesslDialog, report, setRow } from './state.svelte'
 
 function sameSource(a: Entry['source'], b: Remote): boolean {
   return b.type === 'github'
@@ -53,7 +53,7 @@ export async function addFolder(): Promise<void> {
   if (!result.ok) return report(result)
   app.notice = null
   if ('name' in result) {
-    app.rowResult[result.name] = addedText(result.lint)
+    setRow(result.name, addedText(result.lint))
   }
 }
 
@@ -83,7 +83,7 @@ export async function update(entry: Entry, entries: Entry[]): Promise<void> {
   const result = await api.invoke('update', { skill: entry.name })
   report(result)
   if (result.ok) {
-    for (const name of result.updated) app.rowResult[name] = 'updated'
+    for (const name of result.updated) setRow(name, 'updated')
     return
   }
   const source = entry.source
@@ -92,15 +92,15 @@ export async function update(entry: Entry, entries: Entry[]): Promise<void> {
 }
 
 export async function check(entry: Entry): Promise<void> {
-  app.rowResult[entry.name] = 'checking…'
+  setRow(entry.name, 'checking…')
   const result = await api.invoke('check', { skill: entry.name })
   report(result)
-  if (result.ok && result.check.state === 'up-to-date') app.rowResult[entry.name] = 'up to date'
+  if (result.ok && result.check.state === 'up-to-date') setRow(entry.name, 'up to date')
   else delete app.rowResult[entry.name]
 }
 
 export async function checkRegistry(entry: Entry): Promise<void> {
-  app.rowResult[entry.name] = 'checking…'
+  setRow(entry.name, 'checking…')
   // The side card and the strips show the result from the next state; the notice is for refusals.
   report(await api.invoke('check-registry', { skill: entry.name }))
   delete app.rowResult[entry.name]
@@ -114,7 +114,7 @@ export async function updateAll(): Promise<void> {
   const result = await api.invoke('update-all')
   report(result)
   if (!result.ok) return
-  for (const name of result.updated) app.rowResult[name] = 'updated'
+  for (const name of result.updated) setRow(name, 'updated')
   const n = result.failed.length
   if (n > 0) {
     app.notice = `Update all: ${n} ${n === 1 ? 'source' : 'sources'} failed (${result.failed.join(', ')}); see the log.`
@@ -131,20 +131,20 @@ export function updateLabel(source: Remote, entries: Entry[]): string {
 }
 
 export async function review(entry: Entry): Promise<void> {
-  app.rowResult[entry.name] = 'reviewing…'
+  setRow(entry.name, 'reviewing…')
   const result = await api.invoke('review', { skill: entry.name })
   report(result)
   // The score comes from the saved review in the next state push; output Loadout cannot read is not saved.
-  if (result.ok && !result.saved) app.rowResult[entry.name] = 'review done, see the log'
+  if (result.ok && !result.saved) setRow(entry.name, 'review done, see the log')
   else delete app.rowResult[entry.name]
 }
 
 export async function runFix(entry: Entry): Promise<void> {
-  app.rowResult[entry.name] = 'fixing…'
+  setRow(entry.name, 'fixing…')
   const result = await api.invoke('fix', { skill: entry.name })
   report(result)
   // A fix that changed something shows as FIXED from the next state push; that links to the FIX tab.
-  if (result.ok && !result.changed) app.rowResult[entry.name] = 'no changes'
+  if (result.ok && !result.changed) setRow(entry.name, 'no changes')
   else delete app.rowResult[entry.name]
 }
 
@@ -165,21 +165,21 @@ export async function publish(
   workspace: string,
   commit: boolean
 ): Promise<void> {
-  app.rowResult[entry.name] = 'publishing…'
+  setRow(entry.name, 'publishing…')
   const result = await api.invoke('publish', { skill: entry.name, bump, workspace, commit })
   report(result)
   if (!result.ok) delete app.rowResult[entry.name]
-  else app.rowResult[entry.name] = publishedText(result.manifest, result.version)
+  else setRow(entry.name, publishedText(result.manifest, result.version))
 }
 
 export async function unpublish(entry: Entry): Promise<void> {
-  app.rowResult[entry.name] = 'unpublishing…'
+  setRow(entry.name, 'unpublishing…')
   const result = await api.invoke('unpublish', { skill: entry.name })
   report(result)
   if (!result.ok) delete app.rowResult[entry.name]
   else {
     const note = result.manifestDeleted ? '' : '; manifest not deleted (see Log)'
-    app.rowResult[entry.name] = `unpublished ${result.removed.join(', ')}${note}`
+    setRow(entry.name, `unpublished ${result.removed.join(', ')}${note}`)
   }
 }
 

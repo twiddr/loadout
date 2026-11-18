@@ -10,7 +10,8 @@ import {
   findTool,
   recheckMsFrom,
   resolvePath,
-  startupCheck
+  startupCheck,
+  toolVersion
 } from '../src/main/startup'
 
 let tmp: string
@@ -93,7 +94,7 @@ describe('startupCheck', () => {
     if (withTessl) {
       await script(
         'tessl',
-        `case "$1" in --version) pwd -P > "${join(tmp, 'tessl-cwd')}"; echo 0.119.0;; whoami) echo '{"authenticated":true,"method":"session","user":{"name":"acme-dev"}}';; esac`,
+        `echo "$TESSL_AUTO_UPDATE_INTERVAL_MINUTES" >> "${join(tmp, 'tessl-env')}"; case "$1" in --version) pwd -P > "${join(tmp, 'tessl-cwd')}"; echo 0.119.0;; whoami) echo '{"authenticated":true,"method":"session","user":{"name":"acme-dev"}}';; esac`,
         bin
       )
     }
@@ -140,6 +141,28 @@ describe('startupCheck', () => {
     expect(startup.tools.tessl).toBeNull()
     expect(startup.tesslUser).toBeNull()
     expect(startup.folders).toEqual({ 'claude-code': false, codex: false })
+  })
+
+  it('turns off the Tessl auto-update for every tool call', async () => {
+    const { shell } = await setup(true)
+    const home = join(tmp, 'home')
+    await mkdir(pathsFrom(home).loadout, { recursive: true })
+    const { env } = await startupCheck(
+      structuredClone(DEFAULT_CONFIG),
+      pathsFrom(home),
+      { SHELL: shell, PATH: '/usr/bin', TESSL_AUTO_UPDATE_INTERVAL_MINUTES: '30' },
+      []
+    )
+    expect(env.TESSL_AUTO_UPDATE_INTERVAL_MINUTES).toBe('0')
+    const lines = (await readFile(join(tmp, 'tessl-env'), 'utf8')).trim().split('\n')
+    expect(lines).toEqual(['0', '0'])
+  })
+
+  it('toolVersion reads the first line of --version', async () => {
+    const { bin } = await setup(true)
+    expect(await toolVersion(join(bin, 'git'), { PATH: '/usr/bin' }, tmp)).toBe('2.47.0')
+    const broken = await script('broken', 'exit 1')
+    expect(await toolVersion(broken, { PATH: '/usr/bin' }, tmp)).toBeNull()
   })
 })
 

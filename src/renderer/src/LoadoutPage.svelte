@@ -9,6 +9,7 @@
   import PackCard from './PackCard.svelte'
   import PageHeader from './PageHeader.svelte'
   import SkillCard from './SkillCard.svelte'
+  import Tip from './Tip.svelte'
   import { app } from './state.svelte'
 
   let { state: lib, eyebrow }: { state: State; eyebrow: string | null } = $props()
@@ -16,7 +17,6 @@
   let addDialog = $state<HTMLDialogElement>()
   let registryDialog = $state<HTMLDialogElement>()
   let linkAdd = $state<AddDialog>()
-  let registryAdd = $state<AddDialog>()
 
   const issued = $derived(lib.entries.filter((e) => e.enabledFor.length > 0).length)
   const shown = $derived(
@@ -28,27 +28,28 @@
   )
   // The key is `github:<owner>/<repo>` or `tessl:<workspace>/<plugin>`, so it names the pack with one member left too.
   const sourceName = $derived(app.pack?.slice(app.pack.indexOf(':') + 1) ?? '')
-  const fromRegistry = $derived(app.pack?.startsWith('tessl:') ?? false)
-  /** Why the open pack cannot recruit more, or null when it can. */
-  const recruitBlock = $derived(
-    fromRegistry
-      ? lib.startup.tools.tessl === null
-        ? 'tessl not found'
-        : null
-      : lib.startup.tools.git === null
-        ? 'git not found'
-        : null
-  )
+  // A Registry plugin holds one skill, so only a Link pack can have more to recruit.
+  const fromLink = $derived(app.pack?.startsWith('github:') ?? false)
+  /** Why the open Link pack cannot recruit more, or null when it can. */
+  const recruitBlock = $derived(lib.startup.tools.git === null ? 'git not found' : null)
   const membersOn = $derived(members.filter((e) => e.enabledFor.length > 0).length)
   const count = (filter: Filter): number =>
     (app.pack === null ? lib.entries : members).filter((e) => matches(e, lib.home, '', filter))
       .length
-  const allChips: { filter: Filter; label: string }[] = [
-    { filter: 'all', label: 'All' },
-    { filter: 'local', label: 'Folder' },
-    { filter: 'github', label: 'Link' },
-    { filter: 'tessl', label: 'Registry' },
-    { filter: 'stowed', label: 'Stowed' }
+  const allChips: { filter: Filter; label: string; tip: string }[] = [
+    { filter: 'all', label: 'All', tip: '' },
+    { filter: 'local', label: 'Folder', tip: 'Your own skills, linked from a folder on this Mac' },
+    {
+      filter: 'github',
+      label: 'Link',
+      tip: 'Skills cloned from a GitHub repository. Intel checks them for updates.'
+    },
+    {
+      filter: 'tessl',
+      label: 'Registry',
+      tip: 'Skills installed from the Tessl Registry. Intel checks them for updates.'
+    },
+    { filter: 'stowed', label: 'Stowed', tip: 'Skills in your loadout that no agent gets' }
   ]
   // An open pack filters its members by All and Stowed only.
   const chips = $derived(
@@ -99,18 +100,20 @@
   >
   <span class="sep">/</span>
   <span class="pack-name">{sourceName}</span>
-  <span class="tip">
-    <button
-      class="back recruit-more"
-      aria-label={`Recruit more from ${sourceName}`}
-      disabled={busy || recruitBlock !== null}
-      onclick={() => (fromRegistry ? registryAdd : linkAdd)?.scanSource(sourceName)}
-      ><Icon name="square-plus" size={15} /></button
-    >
-    <span class="tip-text float" role="tooltip"
-      >{recruitBlock ?? `Recruit more from ${sourceName}`}</span
-    >
-  </span>
+  {#if fromLink}
+    <span class="tip">
+      <button
+        class="back recruit-more"
+        aria-label={`Recruit more from ${sourceName}`}
+        disabled={busy || recruitBlock !== null}
+        onclick={() => linkAdd?.scanSource(sourceName)}
+        ><Icon name="square-plus" size={15} /></button
+      >
+      <span class="tip-text float" role="tooltip"
+        >{recruitBlock ?? `Recruit more from ${sourceName}`}</span
+      >
+    </span>
+  {/if}
   <span class="sep">·</span>
   <span>{members.length} {plural(members.length, 'SKILL', 'SKILLS')}</span>
   <span class="sep">·</span>
@@ -122,22 +125,23 @@
   <button popovertarget="requisition" popovertargetaction="hide" onclick={addFolder} disabled={busy}
     ><Icon name="folder" />Add from folder</button
   >
-  <button
-    popovertarget="requisition"
-    popovertargetaction="hide"
-    onclick={() => addDialog?.showModal()}
-    disabled={busy || lib.startup.tools.git === null}
-    title={lib.startup.tools.git === null ? 'git not found' : undefined}
-    ><Icon name="link" />Add from link</button
-  >
-  <button
-    popovertarget="requisition"
-    popovertargetaction="hide"
-    onclick={() => registryDialog?.showModal()}
-    disabled={busy || lib.startup.tools.tessl === null}
-    title={lib.startup.tools.tessl === null ? 'tessl not found' : undefined}
-    ><Icon name="package" />Add from registry</button
-  >
+  <Tip text={lib.startup.tools.git === null ? 'git not found' : ''} place="side">
+    <button
+      popovertarget="requisition"
+      popovertargetaction="hide"
+      onclick={() => addDialog?.showModal()}
+      disabled={busy || lib.startup.tools.git === null}><Icon name="link" />Add from link</button
+    >
+  </Tip>
+  <Tip text={lib.startup.tools.tessl === null ? 'tessl not found' : ''} place="side">
+    <button
+      popovertarget="requisition"
+      popovertargetaction="hide"
+      onclick={() => registryDialog?.showModal()}
+      disabled={busy || lib.startup.tools.tessl === null}
+      ><Icon name="package" />Add from registry</button
+    >
+  </Tip>
 </div>
 <Notice />
 {#if updates.length > 0}
@@ -163,18 +167,20 @@
       bind:value={app.search}
     />
   </label>
-  {#each chips as { filter, label } (filter)}
-    <button
-      class="filter-chip"
-      aria-pressed={app.filter === filter}
-      onclick={() => (app.filter = filter)}
-    >
-      {#if filter === 'local' || filter === 'github' || filter === 'tessl'}
-        <span class="swatch-sq {filter}"></span>
-      {/if}
-      {label}
-      <span aria-hidden="true">{count(filter)}</span>
-    </button>
+  {#each chips as { filter, label, tip } (filter)}
+    <Tip text={tip}>
+      <button
+        class="filter-chip"
+        aria-pressed={app.filter === filter}
+        onclick={() => (app.filter = filter)}
+      >
+        {#if filter === 'local' || filter === 'github' || filter === 'tessl'}
+          <span class="swatch-sq {filter}"></span>
+        {/if}
+        {label}
+        <span aria-hidden="true">{count(filter)}</span>
+      </button>
+    </Tip>
   {/each}
   <div class="view-switch">
     <span class="tip">
@@ -233,4 +239,4 @@
 </div>
 
 <AddDialog kind="github" {busy} bind:dialog={addDialog} bind:this={linkAdd} />
-<AddDialog kind="tessl" {busy} bind:dialog={registryDialog} bind:this={registryAdd} />
+<AddDialog kind="tessl" {busy} bind:dialog={registryDialog} />
