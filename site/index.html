@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#28292c">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Loadout · agent skills on your Mac">
-<meta property="og:description" content="All your agent skills, in one library. Deployed with a single switch. A macOS app for Claude Code and Codex.">
+<meta property="og:description" content="One library of skills. One switch per coding agent. A macOS app for Claude Code and Codex.">
 <meta property="og:url" content="https://theloadout.dev/">
 <meta property="og:image" content="https://theloadout.dev/og.png">
 <meta property="og:image:width" content="1200">
@@ -22,11 +22,11 @@
 <link rel="preload" href="assets/fonts/jetbrains-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/jetbrains-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/boxes/box-a.webp" as="image" type="image/webp" fetchpriority="high">
-<script>(function (d) { d.classList.add('js'); if (matchMedia('(min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) d.classList.add('motion'); })(document.documentElement);</script>
+<script>(function (d) { d.classList.add('js'); if (matchMedia('(min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) d.classList.add('motion'); if (matchMedia('(prefers-reduced-motion: no-preference)').matches) { d.classList.add('intro'); setTimeout(function () { d.classList.remove('intro'); }, 4000); } })(document.documentElement);</script>
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/vendor/gsap.min.js" defer></script>
 <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
-<script src="assets/site.js" defer onerror="document.documentElement.classList.remove('motion')"></script>
+<script src="assets/site.js" defer onerror="document.documentElement.classList.remove('motion', 'intro')"></script>
 </head>
 <body>
 <a class="skip" href="#get">Skip to install</a>
@@ -65,7 +65,7 @@
       </div>
     </div></div>
     <div class="say">
-      <h1>One library of skills. <span>One switch per coding agent.</span></h1>
+      <h1><span>One library of skills.</span> <span>One switch per coding agent.</span></h1>
       <div class="cmd mouse">
         <pre><code id="install-cmd">curl -fL -o ~/Downloads/Loadout.dmg https://<wbr>github.com/<wbr>twiddr/<wbr><span class="nb">loadout</span>/<wbr>releases/<wbr>latest/<wbr>download/<wbr>Loadout.dmg</code></pre>
         <button class="copy" type="button" data-target="install-cmd">Copy</button>

@@ -97,10 +97,77 @@
     [more1, more2].forEach(function (more) { more.classList.toggle('gone', more.getBoundingClientRect().top < innerHeight / 2); });
   }, { passive: true });
 
+  /* ---- The working app: site/app/ in a frame over the capture. It loads at the first scroll,
+          and shows when it reports that it is drawn; until then the capture and its header stay ---- */
+  var screen = document.querySelector('.screen');
+  // ScrollTrigger pins the app section. At each refresh (load, resize) it moves a pinned element out of
+  // a spacer of its own and back, and a frame that moves in the DOM loads again: the app would start over.
+  // With this spacer (pinSpacer below) the section never moves.
+  var spacer = document.createElement('div');
+  app.parentNode.insertBefore(spacer, app);
+  spacer.appendChild(app);
+  addEventListener('scroll', function () {
+    // not on a phone or a touch device (never tested there), and not with reduced data
+    if (!matchMedia('(min-width: 600px) and (pointer: fine)').matches) return;
+    if (navigator.connection && navigator.connection.saveData) return;
+    var frame = document.createElement('iframe');
+    frame.title = 'Loadout, with sample skills';
+    frame.tabIndex = -1; // out of the Tab order: 81 stops stand between a keyboard visitor and the install steps
+    frame.src = 'app/index.html';
+    // the app is drawn at 1440 x 900 and scaled to the slot (site.css reads --k)
+    function scale() { screen.style.setProperty('--k', screen.clientWidth / 1440); }
+    scale();
+    addEventListener('resize', scale);
+    addEventListener('message', function (e) {
+      if (e.origin !== location.origin || e.source !== frame.contentWindow || e.data !== 'loadout-ready') return;
+      frame.classList.add('on');
+      document.getElementById('app-h').textContent = 'Try it here';
+      app.querySelector('.head p').innerHTML = '<b>This is the real app, with sample skills.</b><br>Flip a switch. Nothing is installed.';
+    });
+    screen.appendChild(frame);
+  }, { once: true, passive: true });
+
   /* ---- Motion: a wide window, a mouse or trackpad, motion allowed, and GSAP loaded ---- */
-  if (!window.gsap || !window.ScrollTrigger) { root.classList.remove('motion'); return; }
+  if (!window.gsap || !window.ScrollTrigger) { root.classList.remove('motion', 'intro'); return; }
   gsap.registerPlugin(ScrollTrigger);
   document.fonts.ready.then(function () { fit(); ScrollTrigger.refresh(); });
+
+  /* ---- The intro: the first screen gets sharp with the Codex lamp of box 1 off; at 2 s the switch goes on ---- */
+  // index.html sets .intro when motion is allowed, and takes it away after 4 s so that a late script never hides the page.
+  var codex = document.querySelector('.b1 .hr');
+  var started = false;
+  function intro() {
+    if (started) return;
+    started = true;
+    if (!root.classList.contains('intro') || scrollY > 30) { // too late, or the page has moved on
+      root.classList.remove('intro');
+      codex.setAttribute('aria-pressed', 'true');
+      return;
+    }
+    var box = document.querySelector(matchMedia('(max-width: 899px)').matches ? '.b1' : '.boxes-fit'); // a narrow window has no .boxes-fit box
+    var spans = say.querySelectorAll('h1 span');
+    var lines = [spans[0], spans[1], say.querySelectorAll(':scope > .cmd, .touch'), say.querySelector('.facts'), more1];
+    function done() {
+      gsap.set([box].concat(lines), { clearProps: 'opacity,filter,transform,transformOrigin' });
+      removeEventListener('scroll', skip);
+    }
+    function skip() { if (scrollY > 30) tl.progress(1); } // the first scroll ends the intro at once
+    var tl = gsap.timeline({ onComplete: done })
+      .fromTo(box, { opacity: 0, filter: 'blur(18px)', scale: 1.05, transformOrigin: '50% 50%' }, { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 1.1, ease: 'power2.out' }, 0);
+    lines.forEach(function (line, i) {
+      tl.fromTo(line, { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.8, ease: 'power2.out' }, 0.35 + i * 0.12);
+    });
+    // not when the visitor has set the switch already
+    tl.call(function () { if (codex.getAttribute('aria-pressed') === 'false') codex.click(); }, null, 2);
+    root.classList.remove('intro'); // the timeline holds the start state now
+    addEventListener('scroll', skip, { passive: true });
+  }
+  if (root.classList.contains('intro') && scrollY <= 30) {
+    codex.setAttribute('aria-pressed', 'false');
+    // start when the pictures of box 1 and the fonts are there (the load event), 1.5 s at most
+    addEventListener('load', intro);
+    setTimeout(intro, 1500);
+  } else root.classList.remove('intro');
 
   gsap.matchMedia().add('(min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference)', function () {
     root.classList.add('motion');
@@ -119,7 +186,7 @@
 
     st1 = ScrollTrigger.create({ trigger: pin, start: 'top top', end: '+=60%', pin: true });
     // the page stops at the app: it stays in the centre for this much scroll
-    st2 = ScrollTrigger.create({ trigger: app, start: 'top top', end: '+=70%', pin: true,
+    st2 = ScrollTrigger.create({ trigger: app, start: 'top top', end: '+=70%', pin: true, pinSpacer: spacer,
       onUpdate: function (self) { more2.classList.toggle('gone', self.progress > 0.9); } });
 
     var row = false, moving = false, jump = false; // moving: the boxes are on their way in; jump: the End key skipped the move

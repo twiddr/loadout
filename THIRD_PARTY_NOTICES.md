@@ -1,6 +1,6 @@
 # Third-party notices
 
-Loadout's own code is under the MIT licence in [`LICENSE`](LICENSE). The app bundles the third-party material below, which keeps its own licence.
+Loadout's own code is under the MIT licence in [`LICENSE`](LICENSE). The app bundles the third-party material below, which keeps its own licence. The download page's app in `site/app/` is a build of the same renderer and bundles the same fonts and icons.
 
 ## Fonts
 
