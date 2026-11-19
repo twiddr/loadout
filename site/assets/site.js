@@ -1,12 +1,26 @@
-// Loadout landing page: copy buttons, live release facts, and the scroll motion.
+// Loadout download page: copy buttons, live release facts, the switches, and the scroll motion.
 (function () {
   'use strict';
+
+  var root = document.documentElement;
+  var pin = document.querySelector('.pin');
+  var say = document.querySelector('.say');
+  var app = document.getElementById('app');
+  var get = document.getElementById('get');
+  var more1 = document.querySelector('.more.m1');
+  var more2 = document.querySelector('.more.m2');
+
+  /* ---- The boxes fit the window; the text keeps its size (site.css reads --say-h) ---- */
+  function fit() { pin.style.setProperty('--say-h', say.offsetHeight + 'px'); }
+  fit();
+  addEventListener('resize', fit);
 
   /* ---- Copy buttons: copy the exact text of the target <code> ---- */
   document.querySelectorAll('.copy').forEach(function (button) {
     button.addEventListener('click', function () {
       var code = document.getElementById(button.dataset.target);
-      navigator.clipboard.writeText(code.textContent).then(function () {
+      // no clipboard on a page that is not served over https
+      (navigator.clipboard ? navigator.clipboard.writeText(code.textContent) : Promise.reject()).then(function () {
         button.textContent = 'Copied';
       }, function () {
         var range = document.createRange();
@@ -14,15 +28,14 @@
         var selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
-        button.textContent = 'Press ⌘C';
+        button.textContent = matchMedia('(pointer: coarse)').matches ? 'Selected' : 'Press ⌘C';
       });
-      setTimeout(function () { button.textContent = 'Copy'; }, 2000);
+      setTimeout(function () { button.textContent = 'Copy'; }, 1600);
     });
   });
 
   /* ---- Live release facts: shown only when the GitHub API answers with sane values ---- */
   var API = 'https://api.github.com/repos/twiddr/loadout/releases/latest';
-  var RELEASES = 'https://github.com/twiddr/loadout/releases/';
 
   function fill(name, text) {
     document.querySelectorAll('[data-rel="' + name + '"]').forEach(function (el) { el.textContent = text; });
@@ -41,158 +54,108 @@
       var dmg = (rel.assets || []).filter(function (a) { return a && a.name === 'Loadout.dmg'; })[0];
       var date = new Date(rel.published_at);
       if (!dmg || !(dmg.size > 0) || isNaN(date)) return;
-      var url = String(rel.html_url || '');
       fill('version', tag.slice(1));
       fill('date', date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }));
-      fill('size', (dmg.size / 1e6).toFixed(1) + '\u00a0MB');
-      document.querySelectorAll('a[data-rel-link]').forEach(function (a) { if (url.indexOf(RELEASES) === 0) a.href = url; });
+      fill('size', (dmg.size / 1e6).toFixed(1) + ' MB');
       var hash = /^sha256:([0-9a-f]{64})$/.exec(String(dmg.digest || ''));
       if (hash) fill('sha256', hash[1]);
       show('live', true);
       show('hash', !!hash);
       show('fallback', false);
+      fit();
     })
     .catch(function () { /* keep the page silent: no version-dependent facts */ });
 
-  /* ---- Briefing art loads when the Boot camp section comes near (SVG images cannot lazy-load) ---- */
-  var boot = document.querySelector('.boot');
-  var lazyArt = boot ? Array.prototype.slice.call(boot.querySelectorAll('[data-lazy]')) : [];
-  var loadArt = function () {
-    lazyArt.forEach(function (el) {
-      if (el.tagName.toLowerCase() === 'img') el.src = el.dataset.lazy; else el.setAttribute('href', el.dataset.lazy);
-      el.removeAttribute('data-lazy');
+  /* ---- The switches: every toggle works; site.css draws the state from aria-pressed ---- */
+  document.querySelectorAll('.hit').forEach(function (button) {
+    button.addEventListener('click', function () {
+      button.parentElement.classList.toggle('one', Math.random() < 0.5); // the lamp flickers with one dip or with two
+      button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+      // the lever passes its middle position (site.css shows the frame while .mid is set)
+      button.classList.add('mid');
+      setTimeout(function () { button.classList.remove('mid'); }, 70);
     });
-  };
-  if (boot && 'IntersectionObserver' in window) {
-    var artWatch = new IntersectionObserver(function (entries) {
-      if (entries.some(function (e) { return e.isIntersecting; })) { loadArt(); artWatch.disconnect(); }
-    }, { rootMargin: '400px 0px' });
-    artWatch.observe(boot);
-  } else {
-    loadArt();
-  }
+  });
 
-  /* ---- The Briefing map: still under reduced motion ---- */
-  var map = document.querySelector('.world');
-  if (map && map.pauseAnimations && matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    map.setCurrentTime(2.5); // hold a frame with a truck on the road and the helicopter in the air
-    map.pauseAnimations();
-  }
+  /* ---- Boxes 2 and 3 load after the first screen ---- */
+  addEventListener('load', function () { root.classList.add('art'); });
 
-  /* ---- BOOT CAMP checks: the tools turn green one by one while the section is on screen ---- */
-  var checks = document.querySelector('.checks');
-  if (checks && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.intersectionRatio >= 0.99) checks.classList.add('found');
-        else if (!e.isIntersecting) checks.classList.remove('found');
-      });
-    }, { threshold: [0, 0.99] }).observe(checks);
-  }
+  /* ---- The chevrons scroll to the next part, and go when the page has moved on ---- */
+  var st1 = null, st2 = null; // the two pins; set only while the motion runs
+  var calm = matchMedia('(prefers-reduced-motion: reduce)');
+  function go(el) { el.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth' }); }
+  more1.addEventListener('click', function () {
+    if (st2) scrollTo({ top: st2.start, behavior: 'smooth' });
+    else go(app);
+  });
+  more2.addEventListener('click', function () {
+    if (st2) scrollTo({ top: st2.end + innerHeight * 0.92, behavior: 'smooth' });
+    else go(get);
+  });
+  addEventListener('scroll', function () {
+    if (st1) return;
+    [more1, more2].forEach(function (more) { more.classList.toggle('gone', more.getBoundingClientRect().top < innerHeight / 2); });
+  }, { passive: true });
 
-  /* ---- Motion: only with GSAP loaded and motion allowed ---- */
-  var root = document.documentElement;
-  if (!root.classList.contains('motion')) return;
+  /* ---- Motion: a wide window, a mouse or trackpad, motion allowed, and GSAP loaded ---- */
   if (!window.gsap || !window.ScrollTrigger) { root.classList.remove('motion'); return; }
   gsap.registerPlugin(ScrollTrigger);
-  if (window.SplitText) gsap.registerPlugin(SplitText);
+  document.fonts.ready.then(function () { fit(); ScrollTrigger.refresh(); });
 
-  var mobile = function () { return innerWidth < 900; };
-  var gutter = function () { return Math.min(56, Math.max(16, innerWidth * 0.04)); };
+  gsap.matchMedia().add('(min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference)', function () {
+    root.classList.add('motion');
+    more1.classList.remove('gone');
+    more2.classList.remove('gone');
 
-  // Hero entrance: the one moment that plays without scrolling.
-  document.fonts.ready.then(function () {
-    var chars = window.SplitText ? SplitText.create('.hero-copy h1', { type: 'chars' }).chars : '.hero-copy h1';
-    gsap.timeline({ defaults: { ease: 'power3.out' } })
-      .from(chars, { opacity: 0, scale: 1.5, filter: 'blur(8px)', duration: 0.55, stagger: 0.05 })
-      .from('.hero-copy > :not(h1)', { opacity: 0, y: 18, duration: 0.6, stagger: 0.08 }, '-=0.25')
-      .from('.screen-in', { opacity: 0, x: 120, duration: 1.1, ease: 'expo.out' }, 0.2);
-    ScrollTrigger.refresh();
-  });
+    // The move from one box to three runs on its own clock. Scroll only starts it.
+    // The values are parts of each box's own size, so they hold at every window size:
+    // box 1 goes from left 374.375 to 13 and from scale 0.875 to 0.62 on the floor line; boxes 2 and 3 come 300 px from the right.
+    var tl = gsap.timeline({ paused: true })
+      .to('.b1', { xPercent: -52.278, yPercent: 24.03, scale: 0.62 / 0.875, duration: 0.8, ease: 'power3.inOut' }, 0)
+      .fromTo('.b2', { xPercent: 61.25 }, { xPercent: 0, duration: 0.8, ease: 'power3.out' }, 0.35)
+      .to('.b2', { opacity: 1, duration: 0.4, ease: 'none' }, 0.35)
+      .fromTo('.b3', { xPercent: 61.25 }, { xPercent: 0, duration: 0.8, ease: 'power3.out' }, 0.5)
+      .to('.b3', { opacity: 1, duration: 0.4, ease: 'none' }, 0.5);
 
-  // The tour.
-  var screen = document.querySelector('.screen');
-  var imgs = gsap.utils.toArray('.screen img');
-  var caps = gsap.utils.toArray('.cap');
-  var slots = gsap.utils.toArray('.slots i');
-  var bracket = document.querySelector('.bracket');
-  var heroCopy = document.querySelector('.hero-copy');
-  // Areas of the 1440 × 900 captures; m is a tighter area for phones.
-  var steps = [
-    { img: 0, r: [133, 157, 316, 137] },                                // SK-01 card with its CC / CX switches
-    { img: 1, r: [133, 16, 975, 569], m: [133, 16, 600, 569] },        // skill page: header, review score, deployed to, the full briefing
-    { img: 2, r: [133, 110, 990, 152], m: [133, 110, 520, 152] }       // Recon: unmanaged items
-  ];
+    st1 = ScrollTrigger.create({ trigger: pin, start: 'top top', end: '+=60%', pin: true });
+    // the page stops at the app: it stays in the centre for this much scroll
+    st2 = ScrollTrigger.create({ trigger: app, start: 'top top', end: '+=70%', pin: true,
+      onUpdate: function (self) { more2.classList.toggle('gone', self.progress > 0.9); } });
 
-  function fit() {
-    var W = innerWidth, H = innerHeight, m = mobile() ? 16 : 56;
-    var s = Math.min((W - 2 * m) / 1440, (H - 2 * m) / 900);
-    return { x: (W - 1440 * s) / 2, y: (H - 900 * s) / 2, scale: s };
-  }
-  function start() {
-    if (mobile()) return fit();
-    var h1 = heroCopy.querySelector('h1').getBoundingClientRect();
-    return { x: gutter() + Math.min(560, heroCopy.offsetWidth) + 48, y: h1.top + scrollY, scale: 0.82 * innerWidth / 1440 };
-  }
-  function area() {
-    var W = innerWidth, H = innerHeight, g = gutter();
-    if (mobile()) return { l: 12, r: W - 12, t: 16, b: H * 0.54 };
-    return { l: g + Math.min(400, W * 0.3) + 56, r: W - g, t: 40, b: H - 40 };
-  }
-  function focus(r) {
-    var a = area();
-    var s = Math.min(Math.min((a.r - a.l) / r[2], (a.b - a.t) / r[3]) * 0.9, mobile() ? 1.6 : 2);
-    // Centre the framed area, but never leave empty page above or below the capture: a capture that fits is centred whole.
-    var h = 900 * s, y = (a.t + a.b) / 2 - (r[1] + r[3] / 2) * s;
-    y = h <= a.b - a.t ? (a.t + a.b - h) / 2 : Math.min(a.t, Math.max(a.b - h, y));
-    return { x: (a.l + a.r) / 2 - (r[0] + r[2] / 2) * s, y: y, scale: s };
-  }
-  function box(r) {
-    var f = focus(r), pad = 10;
-    return { x: f.x + r[0] * f.scale - pad, y: f.y + r[1] * f.scale - pad, width: r[2] * f.scale + 2 * pad, height: r[3] * f.scale + 2 * pad };
-  }
-  function get(fn, key) { return function () { return fn()[key]; }; }
-
-  // The tour's later captures sit on screen at opacity 0, so loading="lazy" would not delay them: load them on the first scroll.
-  addEventListener('scroll', function () {
-    imgs.forEach(function (img) { if (img.dataset.src && !img.getAttribute('src')) img.src = img.dataset.src; });
-  }, { once: true, passive: true });
-
-  // A phone first loads the 1440 px capture; the tour zooms, so it switches to the 2880 px one.
-  ScrollTrigger.create({ trigger: '.scene', start: 'top 40%', once: true, onEnter: function () { imgs[0].sizes = '2880px'; } });
-
-  // On a wide screen the hero copy lies over the start of the scene and scrolls away above it; matchMedia undoes it below 900 px.
-  gsap.matchMedia().add('(min-width: 900px)', function () { gsap.set(heroCopy, { position: 'absolute', top: 0, left: 0 }); });
-  gsap.set(screen, { x: get(start, 'x'), y: get(start, 'y'), scale: get(start, 'scale') });
-
-  var tl = gsap.timeline({
-    defaults: { ease: 'power2.inOut' },
-    scrollTrigger: {
-      id: 'tour', trigger: '.scene', start: 'top top',
-      end: function () { return '+=' + innerHeight * 3.2; },
-      pin: true, scrub: 0.8, invalidateOnRefresh: true,
-      snap: { snapTo: 'labels', inertia: false, duration: { min: 0.25, max: 0.7 }, delay: 0.1, ease: 'power1.inOut' }
+    var row = false, moving = false, jump = false; // moving: the boxes are on their way in; jump: the End key skipped the move
+    tl.eventCallback('onComplete', function () { moving = false; document.body.classList.add('row'); });
+    // end the move at once, also when it runs in reverse
+    function finish() { tl.pause().progress(1); moving = false; document.body.classList.add('row'); }
+    function sync() {
+      var y = scrollY, on = y > st1.start + 30, far = y > st1.end + innerHeight * 0.6;
+      if (on) jump = false;
+      if (on && !row) { row = true; if (far) finish(); else { moving = true; tl.play(); } }
+      else if (!on && row && !jump) { row = false; moving = false; document.body.classList.remove('row'); tl.reverse(); }
+      if (moving && far) finish();                            // a jump past the boxes (scrollbar, End key) ends the move at once
+      else if (moving && y > st1.end) scrollTo(0, st1.end);   // keep the boxes on screen until they are in place
+      more1.classList.toggle('gone', y > st1.end + 40);       // the hint goes when the page leaves the boxes
     }
-  });
-  tl.addLabel('hero')
-    .to(heroCopy, { autoAlpha: function () { return mobile() ? 1 : 0; }, y: function () { return mobile() ? 0 : -60; }, duration: 0.6, ease: 'power1.in' }, 0);
+    // while the boxes move in, more scroll input waits (about one second)
+    function hold(e) { if (moving) e.preventDefault(); }
+    function keys(e) {
+      // End and Cmd+Down scroll in steps, so sync cannot see the jump: end the move here
+      if ((e.key === 'End' || (e.metaKey && e.key === 'ArrowDown')) && (!row || moving)) { row = jump = true; finish(); return; }
+      if (moving && (e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.target.closest('button, a')))) e.preventDefault();
+    }
+    addEventListener('scroll', sync, { passive: true });
+    addEventListener('wheel', hold, { passive: false });
+    addEventListener('touchmove', hold, { passive: false });
+    addEventListener('keydown', keys);
+    sync();
 
-  steps.forEach(function (step, i) {
-    var R = function () { return mobile() && step.m ? step.m : step.r; };
-    var to = { x: function () { return focus(R()).x; }, y: function () { return focus(R()).y; }, scale: function () { return focus(R()).scale; }, duration: 1 };
-    // The first step zooms straight from the hero to the SK-01 card.
-    if (i === 0) tl.fromTo(screen, { x: get(start, 'x'), y: get(start, 'y'), scale: get(start, 'scale') }, to, 0);
-    else tl.to(screen, to);
-    tl.to(bracket, { x: function () { return box(R()).x; }, y: function () { return box(R()).y; }, width: function () { return box(R()).width; }, height: function () { return box(R()).height; }, opacity: 1, duration: 1 }, '<');
-    if (i === 0) tl.to('.veil, .slots', { opacity: 1, duration: 0.6 }, '<0.3');
-    if (i > 0) tl.to(caps[i - 1], { autoAlpha: 0, y: -24, duration: 0.35 }, '<');
-    if (i > 0 && step.img !== steps[i - 1].img) tl.to(imgs[step.img], { opacity: 1, duration: 0.45 }, '<0.3');
-    tl.fromTo(caps[i], { autoAlpha: 0, y: 32 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '<0.45');
-    tl.to(slots[i], { backgroundColor: '#e9a04b', borderColor: '#e9a04b', duration: 0.3 }, '<');
-    tl.addLabel('s' + i).to({}, { duration: 0.7 });
+    return function () {
+      removeEventListener('scroll', sync);
+      removeEventListener('wheel', hold);
+      removeEventListener('touchmove', hold);
+      removeEventListener('keydown', keys);
+      st1 = st2 = null;
+      root.classList.remove('motion');
+      document.body.classList.remove('row');
+    };
   });
-
-  // Boot camp: the tablet stands up as it enters.
-  gsap.from('.pad', { rotationX: 32, scale: 0.86, y: 80, opacity: 0.4, ease: 'none',
-    scrollTrigger: { trigger: '.boot', start: 'top bottom', end: 'center center', scrub: 0.6 } });
 })();
