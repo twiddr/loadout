@@ -3965,7 +3965,26 @@ dialog.briefing.closing .brief-card {
 dialog.briefing::backdrop {
   background: transparent;
 }
+/* The card is dark in both appearances: the spreads have a dark backdrop (ADR
+   20261120-briefing-field-manual). The colours are those of the approved prototype. */
 .brief-card {
+  color-scheme: dark;
+  --bg: #2a2a2a;
+  --card: #303030;
+  --card-border: #3e3e3e;
+  --divider: #444;
+  --ink: #e8dfc4;
+  --on-ink: #1f1b12;
+  --eyebrow: #aca487;
+  --fg: #e8e8e8;
+  --fg-2: #c8c8c8;
+  --faint: #b0b0b0;
+  --muted: #aaa;
+  --control-border: #535353;
+  --field: #232323;
+  --active: #444;
+  --amber-text: #e9a04b;
+  --accent: #7fa9dc;
   -webkit-app-region: no-drag;
   box-sizing: border-box;
   width: 980px;
@@ -4028,467 +4047,33 @@ dialog.briefing .title {
   display: flex;
   align-items: center;
 }
-/* The live tablet: one map that pans and zooms under a fixed frame image. The screen keeps its
-   own dark colours in both appearances. Numbers come from design/briefing/mockup.html. */
-.brief-pad {
+/* The field manual: one still spread per card, and a canvas over it that draws the page turn.
+   The spread's edges fade into the card. Numbers come from design/briefing-field-manual/. */
+.brief-art {
   position: relative;
   width: 100%;
   aspect-ratio: 1280 / 720;
-  filter: drop-shadow(0 14px 16px rgb(0 0 0 / 0.4));
-  --scr-bg: #13160f;
-  --scr-ink: #e8dfc4;
-  --scr-ok: #8fd19c;
-  --scr-dust: rgb(205 182 135 / 0.6);
-  --scr-rotor: rgb(12 15 10 / 0.62);
 }
-.brief-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  pointer-events: none;
-}
-.brief-view {
-  position: absolute;
-  left: 11.172%;
-  top: 15.833%;
-  width: 77.578%;
-  height: 69.028%;
-  overflow: hidden;
-  border-radius: 1.1% / 2.2%;
-  background: var(--scr-bg);
-}
-.brief-world {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 993px;
-  height: 497px;
-  transform-origin: 0 0;
-  transition: transform 1.6s cubic-bezier(0.65, 0, 0.25, 1);
-  will-change: transform;
-}
-.brief-mapimg {
-  position: absolute;
-  left: -4px;
-  top: -4px;
-  width: 1001px;
-  height: 505px;
-  max-width: none;
-}
-.brief-ov {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 993px;
-  height: 497px;
-  overflow: visible;
-}
-/* A layer comes in after most of the pan and leaves fast. */
-.brief-world [data-layer] {
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-.brief-world [data-layer].on {
-  opacity: 1;
-  transition: opacity 0.7s ease 1s;
-}
-.brief-arrow {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 12 9;
-  animation: brief-march 0.9s linear infinite;
-  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.55));
-}
-.brief-arrow.dot {
-  stroke-dasharray: 2 10;
-}
-.brief-ahp {
-  fill: var(--amber);
-}
-@keyframes brief-march {
-  to {
-    stroke-dashoffset: -21;
-  }
-}
-.brief-bracket {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 4;
-  stroke-linecap: square;
-}
-.brief-ring {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 2.5;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: brief-ping 2.4s ease-out infinite;
-}
-.brief-ring.d1 {
-  animation-delay: 0.8s;
-}
-.brief-ring.d2 {
-  animation-delay: 1.6s;
-}
-@keyframes brief-ping {
-  0% {
-    transform: scale(0.25);
-    opacity: 0.95;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-.brief-pulse {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 3;
-  animation: brief-pulse 1.6s ease-in-out infinite;
-}
-@keyframes brief-pulse {
-  0%,
-  100% {
-    opacity: 0.15;
-  }
-  50% {
-    opacity: 0.95;
-  }
-}
-.brief-plate {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font: 800 15px/1 var(--sans);
-  letter-spacing: 0.05em;
-  color: var(--scr-ink);
-  background: var(--scr-bg);
-  border: 2.5px solid var(--amber);
-  border-radius: 6px;
-  padding: 5px 9px;
-  white-space: nowrap;
-  box-shadow: 0 2px 0 rgb(0 0 0 / 0.45);
-}
-.brief-lay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 993px;
-  height: 497px;
-  pointer-events: none;
-}
-.brief-spr {
-  position: absolute;
-  left: 0;
-  top: 0;
-  offset-rotate: 0deg;
-}
-.brief-spr img {
+.brief-art img {
   display: block;
   width: 100%;
   height: auto;
   max-width: none;
+  mask-image:
+    linear-gradient(to right, transparent, black 3%, black 97%, transparent),
+    linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+  mask-composite: intersect;
 }
-/* The trucks and the helicopter rest hidden; their loops start when their card opens. */
-.brief-truck {
-  width: 76px;
-  opacity: 0;
+.brief-art img[hidden],
+.brief-leaf[hidden] {
+  display: none;
 }
-.brief-truck.t1 {
-  offset-path: path('M665 148 C720 140 790 110 842 84');
-}
-.brief-truck.t2 {
-  offset-path: path('M672 226 C730 222 800 200 850 183');
-}
-.brief-lay.on .brief-truck.t1 {
-  animation: brief-drive 6s ease-in-out 1.2s infinite both;
-}
-.brief-lay.on .brief-truck.t2 {
-  animation: brief-drive 6s ease-in-out 3.4s infinite both;
-}
-@keyframes brief-drive {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  70% {
-    offset-distance: 66%;
-    opacity: 1;
-  }
-  90% {
-    offset-distance: 66%;
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 66%;
-    opacity: 0;
-  }
-}
-.brief-dust {
-  position: absolute;
-  left: -14%;
-  bottom: 2%;
-  width: 30%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--scr-dust), transparent 70%);
-  animation: brief-puff 0.8s ease-out infinite;
-}
-.brief-dust.b {
-  left: -30%;
-  bottom: 10%;
-  animation-delay: 0.4s;
-}
-@keyframes brief-puff {
-  0% {
-    transform: scale(0.4);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(1.7) translateX(-20%);
-    opacity: 0;
-  }
-}
-.brief-heli {
-  width: 112px;
-  offset-path: path('M325 232 C280 236 230 244 195 250');
-  opacity: 0;
-}
-.brief-lay.on .brief-heli {
-  animation: brief-fly 8s ease-in-out 1.2s infinite both;
-}
-@keyframes brief-fly {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  80% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-  92%,
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-.brief-rotor {
-  position: absolute;
-  left: -15%;
-  top: -42.5%;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, transparent 0 62%, rgb(12 15 10 / 0.1) 63% 70%, transparent 71%),
-    conic-gradient(
-      var(--scr-rotor) 0 7%,
-      transparent 7% 25%,
-      var(--scr-rotor) 25% 32%,
-      transparent 32% 50%,
-      var(--scr-rotor) 50% 57%,
-      transparent 57% 75%,
-      var(--scr-rotor) 75% 82%,
-      transparent 82%
-    );
-  animation: brief-rotor 0.22s linear infinite;
-}
-.brief-rotor.tail {
-  left: 85%;
-  top: 4.5%;
-  width: 22%;
-  animation-name: brief-rotor-tail;
-}
-@keyframes brief-rotor {
-  from {
-    transform: scaleY(0.3) rotate(0deg);
-  }
-  to {
-    transform: scaleY(0.3) rotate(360deg);
-  }
-}
-@keyframes brief-rotor-tail {
-  from {
-    transform: scaleX(0.35) rotate(0deg);
-  }
-  to {
-    transform: scaleX(0.35) rotate(360deg);
-  }
-}
-.brief-drone {
-  width: 88px;
-  left: 778px;
-  top: 328px;
-  animation: brief-bob 2.6s ease-in-out infinite;
-}
-@keyframes brief-bob {
-  0%,
-  100% {
-    transform: translateY(-3px);
-  }
-  50% {
-    transform: translateY(4px);
-  }
-}
-.brief-cone {
-  position: absolute;
-  left: 22%;
-  top: 62%;
-  width: 56%;
-  height: 95%;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--amber) 60%, transparent),
-    transparent
-  );
-  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
-  animation: brief-pulse 1.6s ease-in-out infinite;
-}
-.brief-scan {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at center, transparent 62%, rgb(0 0 0 / 0.28) 100%);
-}
-.brief-sweep {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 30%;
-  opacity: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    color-mix(in srgb, var(--scr-ok) 26%, transparent),
-    transparent
-  );
-}
-/* The screen stays dark until the power-up starts. */
-.brief-view:not(.boot) .brief-world {
-  opacity: 0;
-}
-/* Hidden, not only transparent, after the power-up, so the filter costs nothing. */
-.brief-noise {
+.brief-leaf {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  visibility: hidden;
-}
-.brief-view.boot .brief-noise {
-  animation: brief-noise 1.4s linear both;
-}
-.brief-view.boot .brief-world {
-  animation: brief-flick 1.7s steps(1, end) both;
-}
-.brief-view.boot .brief-sweep {
-  animation: brief-sweep 1.7s ease-out both;
-}
-@keyframes brief-noise {
-  0% {
-    opacity: 0.85;
-    visibility: visible;
-  }
-  35% {
-    opacity: 0.6;
-  }
-  55% {
-    opacity: 0.3;
-  }
-  70% {
-    opacity: 0.4;
-  }
-  99% {
-    opacity: 0;
-    visibility: visible;
-  }
-  100% {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-@keyframes brief-flick {
-  0% {
-    opacity: 0;
-  }
-  18% {
-    opacity: 0.7;
-  }
-  22% {
-    opacity: 0;
-  }
-  34% {
-    opacity: 0.4;
-  }
-  38% {
-    opacity: 0.05;
-  }
-  52% {
-    opacity: 0.9;
-  }
-  56% {
-    opacity: 0.3;
-  }
-  64%,
-  100% {
-    opacity: 1;
-  }
-}
-@keyframes brief-sweep {
-  0% {
-    opacity: 1;
-    transform: translateY(-100%);
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(340%);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .brief-world {
-    transition: none;
-  }
-  .brief-arrow,
-  .brief-ring,
-  .brief-pulse,
-  .brief-lay.on .brief-truck.t1,
-  .brief-lay.on .brief-truck.t2,
-  .brief-dust,
-  .brief-lay.on .brief-heli,
-  .brief-rotor,
-  .brief-drone,
-  .brief-cone,
-  .brief-view.boot .brief-world,
-  .brief-view.boot .brief-sweep,
-  .brief-view.boot .brief-noise {
-    animation: none;
-  }
-  .brief-truck.t1,
-  .brief-truck.t2 {
-    offset-distance: 66%;
-    opacity: 1;
-  }
-  .brief-heli {
-    offset-distance: 50%;
-    opacity: 1;
-  }
 }
 .brief-foot {
   display: flex;
@@ -4543,6 +4128,9 @@ button.brief-skip {
   border-color: transparent;
   background: transparent;
   color: var(--muted);
+}
+button.brief-skip:hover:not(:disabled) {
+  color: var(--fg);
 }
 
 /*

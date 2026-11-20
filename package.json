@@ -1,6 +1,6 @@
 {
   "name": "loadout",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "description": "One place to manage agent skills for Claude Code and Codex",
   "main": "./out/main/index.js",
@@ -17,7 +17,9 @@
     "lint": "eslint --cache .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:e2e": "electron-vite build && playwright test"
+    "test:e2e": "electron-vite build && playwright test",
+    "site:app": "vite build --config src/page/vite.config.ts",
+    "site:app:check": "node src/page/check.mjs"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.1",

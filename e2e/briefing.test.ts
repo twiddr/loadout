@@ -3,7 +3,6 @@ import { rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DEFAULT_CONFIG, serializeConfig } from '../src/core/config'
 import type { LoadoutApi } from '../src/core/ipc'
-import { VIEWS, worldTransform } from '../src/renderer/src/briefing'
 import { fakeHome } from './support/fake-home'
 import { launch } from './support/synced'
 
@@ -148,116 +147,163 @@ test('briefing: opens on the first card again after a close', async () => {
   })
 })
 
-/** The scale and the offsets in a `scale(k) translate(xpx, ypx)` transform. */
-function parts(transform: string): number[] {
-  return (transform.match(/-?\d+(\.\d+)?(e-?\d+)?/g) ?? []).map(Number)
+const SPREADS = ['one-kit', 'deploy', 'recon', 'intel', 'inspection']
+
+/** The file names of the spreads that show; the build adds a hash to each name. */
+const shownSpreads = (page: Page): Promise<string[]> =>
+  page.evaluate(() =>
+    [...document.querySelectorAll<HTMLImageElement>('dialog.briefing .brief-art img')]
+      .filter((img) => !img.hidden && img.naturalWidth === 1280 && img.naturalHeight === 720)
+      .map((img) => img.src.split('/').pop() ?? '')
+  )
+
+/** Waits until card `step` shows its own spread, and only that one. */
+async function expectSpread(page: Page, step: number): Promise<void> {
+  await expect
+    .poll(() => shownSpreads(page))
+    .toEqual([expect.stringMatching(new RegExp(`^${SPREADS[step - 1]}-[\\w-]+\\.webp$`))])
 }
 
-/** Waits until the world shows the view of card `step` at the current screen width. */
-async function expectView(page: Page, step: number): Promise<void> {
-  await expect(async () => {
-    const { got, width } = await page.evaluate(() => {
-      const world = document.querySelector<HTMLElement>('.brief-world')
-      const view = document.querySelector<HTMLElement>('.brief-view')
-      return { got: world?.style.transform ?? '', width: view?.clientWidth ?? 0 }
-    })
-    expect(width).toBeGreaterThan(0)
-    const want = parts(worldTransform(VIEWS[step - 1], width))
-    const have = parts(got)
-    expect(have).toHaveLength(3)
-    // The browser rounds the numbers it stores in the style.
-    have.forEach((n, i) => expect(n).toBeCloseTo(want[i], 3))
-  }).toPass({ timeout: 5000 })
-}
-
-const layer = (page: Page, name: string): Locator => page.locator(`[data-layer="${name}"]`).first()
-
-test('briefing: the tablet shows the map and the frame', async () => {
-  await withApp(false, async (page) => {
-    await expect(dialog(page).locator('img.brief-frame')).toBeVisible()
-    await expect(async () => {
-      const widths = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLImageElement>('.brief-pad img')].map(
-          (img) => img.naturalWidth
-        )
+/** Waits until all five spreads are decoded, so a move between cards can draw a page turn. */
+async function spreadsReady(page: Page): Promise<void> {
+  await expect(dialog(page).locator('.brief-art img')).toHaveCount(5)
+  await page.evaluate(() =>
+    Promise.all(
+      [...document.querySelectorAll<HTMLImageElement>('dialog.briefing .brief-art img')].map(
+        (img) => img.decode()
       )
-      // The map, the frame, two trucks, the drone and the helicopter.
-      expect(widths).toHaveLength(6)
-      expect(widths.every((w) => w > 0)).toBe(true)
-    }).toPass({ timeout: 5000 })
-  })
-})
+    )
+  )
+}
 
-test('briefing: the map view and the layers follow the card', async () => {
-  await withApp(false, async (page) => {
-    const next = dialog(page).getByRole('button', { name: 'Next' })
-    await expectView(page, 1)
-    await expect(layer(page, 'supply')).not.toHaveClass(/\bon\b/)
-    await next.click()
-    await expectView(page, 2)
-    await expect(layer(page, 'supply')).toHaveClass(/\bon\b/)
-    await expect(layer(page, 'trucks')).toHaveClass(/\bon\b/)
-    await next.click()
-    await expectView(page, 3)
-    await expect(layer(page, 'trucks')).not.toHaveClass(/\bon\b/)
-    await expect(layer(page, 'recon')).toHaveClass(/\bon\b/)
-    await next.click()
-    await expectView(page, 4)
-    await expect(layer(page, 'supply')).not.toHaveClass(/\bon\b/)
-    await expect(layer(page, 'intel')).toHaveClass(/\bon\b/)
-    await next.click()
-    await expectView(page, 5)
-    for (const name of ['supply', 'intel', 'publish', 'heli']) {
-      await expect(layer(page, name)).toHaveClass(/\bon\b/)
+const leaf = (page: Page): Locator => dialog(page).locator('canvas.brief-leaf')
+
+/**
+ * Clicks the Briefing buttons named in `names`, one quickly after the other, well inside one page
+ * turn; then tells whether the page turn shows and which card the Briefing shows.
+ */
+function click(page: Page, ...names: string[]): Promise<{ turning: boolean; title: string }> {
+  return page.evaluate(async (names) => {
+    for (const name of names) {
+      const buttons = [...document.querySelectorAll<HTMLButtonElement>('dialog.briefing button')]
+      const button = buttons.find(
+        (b) => b.textContent?.trim() === name || b.getAttribute('aria-label') === name
+      )
+      if (!button) throw new Error(`no button ${name}`)
+      button.click()
+      // The page updates before the next click, as it does between two clicks of a person.
+      await new Promise((resolve) => setTimeout(resolve, 0))
     }
-    await expect(layer(page, 'recon')).not.toHaveClass(/\bon\b/)
+    const canvas = document.querySelector<HTMLCanvasElement>('dialog.briefing canvas.brief-leaf')
+    return {
+      turning: !!canvas && !canvas.hidden,
+      title: document.querySelector('dialog.briefing h2')?.textContent ?? ''
+    }
+  }, names)
+}
+
+test('briefing: each card shows its field-manual spread', async () => {
+  await withApp(false, async (page) => {
+    await expectSpread(page, 1)
+    for (let step = 2; step <= 5; step++) {
+      await dialog(page).getByRole('button', { name: 'Next' }).click()
+      await expectSpread(page, step)
+    }
+    await expect(leaf(page)).toBeHidden()
   })
 })
 
-test('briefing: fits the minimum window and keeps the view after a resize', async () => {
+test('briefing: a page turn plays between cards, and the latest input wins', async () => {
+  await withApp(false, async (page) => {
+    await spreadsReady(page)
+    // The text and the controls of the next card are there while the page turns.
+    expect(await click(page, 'Next')).toEqual({ turning: true, title: 'DEPLOY' })
+    await expect(leaf(page)).toBeHidden()
+    expect(await click(page, 'Back')).toEqual({ turning: true, title: 'ONE KIT' })
+    await expect(leaf(page)).toBeHidden()
+    // A quick reversal: the second click starts a new turn and ends on its card.
+    expect(await click(page, 'Next', 'Back')).toEqual({ turning: true, title: 'ONE KIT' })
+    await expect(leaf(page)).toBeHidden()
+    await expect(dialog(page)).toHaveAttribute('data-step', '1')
+    await expectSpread(page, 1)
+    // A direct jump makes one turn to its card.
+    expect(await click(page, 'Card 4: INTEL')).toEqual({ turning: true, title: 'INTEL' })
+    await expect(leaf(page)).toBeHidden()
+    await expectSpread(page, 4)
+  })
+})
+
+test('briefing: a close during a turn cancels it, and a replay starts on ONE KIT', async () => {
+  await withApp(false, async (page) => {
+    await spreadsReady(page)
+    const got = await page.evaluate(async () => {
+      const d = document.querySelector<HTMLDialogElement>('dialog.briefing')
+      const canvas = (): HTMLCanvasElement | null => document.querySelector('canvas.brief-leaf')
+      const next = [...document.querySelectorAll<HTMLButtonElement>('dialog.briefing button')].find(
+        (b) => b.textContent?.trim() === 'Next'
+      )
+      next?.click()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      const before = !canvas()?.hidden
+      // What Escape sends to a modal dialog.
+      d?.dispatchEvent(new Event('cancel', { cancelable: true }))
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      return { before, after: !canvas()?.hidden }
+    })
+    expect(got).toEqual({ before: true, after: false })
+    await expect(dialog(page)).toBeHidden()
+    await page
+      .getByRole('navigation', { name: 'Main' })
+      .getByRole('button', { name: 'Briefing' })
+      .click()
+    await expect(heading(page, 'ONE KIT')).toBeVisible()
+    await expect(dialog(page)).toHaveAttribute('data-step', '1')
+    await expectSpread(page, 1)
+    await expect(leaf(page)).toBeHidden()
+  })
+})
+
+test('briefing: with reduced motion the destination shows at once', async () => {
+  await withApp(false, async (page) => {
+    await spreadsReady(page)
+    expect(await click(page, 'Next')).toEqual({ turning: true, title: 'DEPLOY' })
+    await expect(leaf(page)).toBeHidden()
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect(await click(page, 'Next')).toEqual({ turning: false, title: 'RECON' })
+    await expectSpread(page, 3)
+    expect(await click(page, 'Card 1: ONE KIT')).toEqual({ turning: false, title: 'ONE KIT' })
+    await expectSpread(page, 1)
+  })
+})
+
+test('briefing: fits the minimum window with the whole spread in view', async () => {
   await withApp(false, async (page, app) => {
     await dialog(page).getByRole('button', { name: 'Next' }).click()
-    await expectView(page, 2)
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1024, 640))
     await expect.poll(() => page.evaluate(() => window.innerWidth)).toBe(1024)
-    await expectView(page, 2)
+    await expectSpread(page, 2)
     const fit = await page.evaluate(() => {
       const d = document.querySelector<HTMLElement>('dialog.briefing .brief-card')
       const r = d?.getBoundingClientRect()
+      const art = document.querySelector<HTMLElement>('dialog.briefing .brief-art')
+      const a = art?.getBoundingClientRect()
       return {
         inside:
           !!r && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
-        noScroll: !!d && d.scrollHeight <= d.clientHeight && d.scrollWidth <= d.clientWidth
+        noScroll: !!d && d.scrollHeight <= d.clientHeight && d.scrollWidth <= d.clientWidth,
+        art:
+          !!r &&
+          !!a &&
+          a.width > 400 &&
+          Math.abs(a.width / a.height - 16 / 9) < 0.01 &&
+          a.left >= r.left &&
+          a.right <= r.right &&
+          a.top >= r.top &&
+          a.bottom <= r.bottom
       }
     })
-    expect(fit).toEqual({ inside: true, noScroll: true })
+    expect(fit).toEqual({ inside: true, noScroll: true, art: true })
     await expect(dialog(page).getByRole('button', { name: 'Next' })).toBeInViewport({ ratio: 1 })
-  })
-})
-
-test('briefing: the power-up waits for the images and plays at every open', async () => {
-  await withApp(true, async (page) => {
-    await expect(page.locator('.rail-status', { hasText: /^READY$/ })).toBeVisible({
-      timeout: 10000
-    })
-    const button = page
-      .getByRole('navigation', { name: 'Main' })
-      .getByRole('button', { name: 'Briefing' })
-    const view = dialog(page).locator('.brief-view')
-    for (let i = 0; i < 2; i++) {
-      await button.click()
-      // The screen is dark first; the power-up starts a moment after the images are there.
-      await expect(view).toBeVisible()
-      await expect(view).not.toHaveClass(/\bboot\b/)
-      await expect(view).toHaveClass(/\bboot\b/)
-      const loaded = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLImageElement>('.brief-mapimg, .brief-frame')].every(
-          (img) => img.complete && img.naturalWidth > 0
-        )
-      )
-      expect(loaded).toBe(true)
-      await dialog(page).getByRole('button', { name: 'Skip briefing' }).click()
-    }
   })
 })
 
@@ -293,12 +339,13 @@ test('briefing: a double-click on Next on card 4 stops on the last card', async 
   })
 })
 
-test('briefing: the page behind is dimmed and blurred, and the window can still be dragged', async () => {
+test('briefing: the page behind is dimmed and blurred, the card is dark, and the window can still be dragged', async () => {
   await withApp(false, async (page) => {
     await expect(heading(page, 'ONE KIT')).toBeVisible()
     const got = await page.evaluate(() => {
       const d = document.querySelector<HTMLElement>('dialog.briefing')
       const strip = document.querySelector<HTMLElement>('dialog.briefing .dialog-drag')
+      const card = document.querySelector<HTMLElement>('dialog.briefing .brief-card')
       const style = d ? getComputedStyle(d) : null
       const r = d?.getBoundingClientRect()
       const s = strip?.getBoundingClientRect()
@@ -308,7 +355,8 @@ test('briefing: the page behind is dimmed and blurred, and the window can still 
         blur: style?.backdropFilter ?? '',
         dim: Number(style?.backgroundColor.match(/[\d.]+(?=\)$)/)?.[0] ?? 0),
         strip: !!s && s.top === 0 && s.left === 0 && s.width === innerWidth && s.height >= 28,
-        region: strip ? getComputedStyle(strip).getPropertyValue('-webkit-app-region') : ''
+        region: strip ? getComputedStyle(strip).getPropertyValue('-webkit-app-region') : '',
+        card: card ? getComputedStyle(card).backgroundColor : ''
       }
     })
     expect(got.covers).toBe(true)
@@ -316,6 +364,8 @@ test('briefing: the page behind is dimmed and blurred, and the window can still 
     expect(got.dim).toBeGreaterThanOrEqual(0.55)
     expect(got.strip).toBe(true)
     expect(got.region).toBe('drag')
+    // Playwright runs the app in the light appearance; the card stays dark.
+    expect(got.card).toBe('rgb(48, 48, 48)')
   })
 })
 
