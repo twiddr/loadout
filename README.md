@@ -1,8 +1,10 @@
 <p align="center">
   <a href="https://theloadout.dev/">
-    <img src="site/og.png" width="760" alt="An olive-green field switch box labelled CODE-REVIEW, with one switch for Claude (off) and one for Codex (on, its amber lamp lit). Below it: One library of skills. One switch per coding agent.">
+    <img src="design/readme-box.webp" width="440" alt="An olive-green field switch box labelled CODE-REVIEW, with one switch for Claude (off) and one for Codex (on, its amber lamp lit).">
   </a>
 </p>
+
+<h3 align="center">One library of skills. One switch per coding agent.</h3>
 
 <p align="center">
   <b>Loadout</b> is a Mac app that keeps your agent skills in one library<br>
@@ -30,12 +32,6 @@ You write skills, you download skills, and every coding agent wants them in its 
 - **One library.** Every skill is one entry in `~/.loadout/skills`, wherever the skill itself lives: a folder of your own, a GitHub repository or a Tessl plugin.
 - **One switch per agent.** On creates one link in that agent's skills folder. Off removes the link. That is all a switch does.
 - **Nothing gets deleted.** Loadout only adds and removes links. It never deletes a skill folder, and it moves skills it finds in your agent folders to a backup before it takes them over.
-
-```text
- SKILL                          LIBRARY                             AGENTS
- ~/Code/skills/code-review  ◄── ~/.loadout/skills/code-review  ◄─┬── ~/.claude/skills/code-review   CC  ON
-                                                                 └─  (no link)                      CX  OFF
-```
 
 <p align="center">
   <img src="site/assets/shots/1-loadout-1440.webp" width="900" alt="The Loadout page: fifteen sample skill cards with a CC and a CX switch each, and the Platoon panel with Claude Code and Codex.">
@@ -76,9 +72,6 @@ Loadout reads your shell's `PATH` and also looks in `~/.local/bin`, `/opt/homebr
 </details>
 
 ## Deploy: install Loadout
-
-> [!WARNING]
-> **Loadout is not notarised.** It is ad-hoc signed, not signed with an Apple Developer ID, and Apple has not notarised it. A download with `curl` gets no quarantine flag, so macOS skips the Gatekeeper check for it: no notarisation check, no Developer ID check and no first-launch prompt. You trust this repository and GitHub's HTTPS, nothing more.
 
 1. In Terminal, run:
 
